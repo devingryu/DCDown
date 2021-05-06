@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/navigation_graph"
+    app:startDestination="@id/hotlistFragment">
+
+    <fragment
+        android:id="@+id/hotlistFragment"
+        android:name="com.ibd.dcdown.hotlistFragment"
+        android:label="fragment_hotlist"
+        tools:layout="@layout/fragment_hotlist" >
+
+    </fragment>
+    <fragment
+        android:id="@+id/newlistFragment"
+        android:name="com.ibd.dcdown.newlistFragment"
+        android:label="fragment_newlist"
+        tools:layout="@layout/fragment_newlist" />
+    <action
+        android:id="@+id/action_global_hotlistFragment"
+        app:destination="@+id/hotlistFragment"
+        app:popUpTo="@+id/navigation_graph"
+        app:popUpToInclusive="true"/>
+    <action
+        android:id="@+id/action_global_newlistFragment"
+        app:destination="@+id/newlistFragment"
+        app:popUpTo="@+id/navigation_graph"
+        app:popUpToInclusive="true"/>
+</navigation>
