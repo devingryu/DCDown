@@ -1,6 +1,6 @@
 package com.ibd.dcdown.tools
 
-import com.ibd.dcdown.ConPack
+import org.json.JSONObject
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.select.Elements
@@ -44,4 +44,28 @@ object Crawler {
         }
         return res
     }
+    fun crawlCon(index: String) : ConPack {
+        val conArray : ArrayList<ConData> = arrayListOf()
+        val res : String =
+            Jsoup.connect("https://dccon.dcinside.com/index/package_detail")
+                .data("package_idx", index)
+                .ignoreContentType(true)
+                .header("x-requested-with", "XMLHttpRequest")
+                .post()
+                .text()
+
+
+        val response = JSONObject(res)
+
+        val json = response.getJSONArray("detail")
+        val name = response.getJSONObject("info").getString("title")
+        val author = response.getJSONObject("info").getString("seller_name")
+        val img = response.getJSONObject("info").getString("path")
+        for (i in 0 until json.length()) {
+            val v = json.getJSONObject(i)
+            conArray.add(ConData(v.getString("title"), v.getString("ext"), v.getString("path"),false))
+        }
+        return ConPack(name,author,index,img,conArray)
+    }
+
 }

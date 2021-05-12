@@ -1,4 +1,4 @@
-package com.ibd.dcdown
+package com.ibd.dcdown.detail
 
 
 import android.content.Context
@@ -7,21 +7,25 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
-import com.ibd.dcdown.databinding.RecyclerConpackBinding
+import com.ibd.dcdown.tools.ConData
+import com.ibd.dcdown.databinding.RecyclerConimgBinding
 import com.ibd.dcdown.databinding.RecyclerHeaderBinding
 import com.ibd.dcdown.tools.C
 
 
-class ConPackAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class DetailAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+    val columns = 3
+    private var width = -1
 
     var packList: ArrayList<Any> = arrayListOf() // ConPack, String
     private lateinit var mContext: Context
 
-    fun addData(data:ArrayList<ConPack>){
+
+    fun addData(data:ArrayList<ConData>){
         packList.addAll(data)
         notifyDataSetChanged()
     }
-    fun addData(data:ArrayList<ConPack>,header:String){
+    fun addData(data:ArrayList<ConData>, header:String){
         packList.add(header)
         packList.addAll(data)
         notifyDataSetChanged()
@@ -36,10 +40,10 @@ class ConPackAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         mContext = parent.context
-
+        width = parent.width
         return when(viewType){
-            C.VIEW_TYPE_CONPACK -> ConPackViewHolder(
-                RecyclerConpackBinding.inflate(
+            C.VIEW_TYPE_CONIMG -> ConImgViewHolder(
+                RecyclerConimgBinding.inflate(
                     LayoutInflater.from(mContext),
                     parent,
                     false
@@ -56,43 +60,32 @@ class ConPackAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        if (position == packList.lastIndex){
-            val params = holder.itemView.layoutParams as RecyclerView.LayoutParams
-            params.bottomMargin = 100
-            holder.itemView.layoutParams = params
-        }else{
-            val params = holder.itemView.layoutParams as RecyclerView.LayoutParams
-            params.bottomMargin = 0
-            holder.itemView.layoutParams = params
-        }
 
-        when (holder.itemViewType) {
-            C.VIEW_TYPE_CONPACK -> {
-                with(holder as ConPackViewHolder){
-                    (packList[position] as ConPack).let { item ->
+        when(holder.itemViewType){
+            C.VIEW_TYPE_CONIMG -> {
+                with(holder as DetailAdapter.ConImgViewHolder){
+                    (packList[position] as ConData).let { item ->
+                        binding.con.layoutParams.width = width/columns
+                        binding.con.layoutParams.height = width/columns
+                        binding.checkBox.isChecked = item.selected
                         val requestOptions =
                             RequestOptions()
-                                .dontAnimate()
                                 .fitCenter()
 
                         Glide.with(mContext)
-                            .load(item.img)
+                            .load("https://dcimg5.dcinside.com/dccon.php?no=${item.uri}")
                             .apply(requestOptions)
                             .thumbnail(0.1f)
-                            .into(binding.packimg)
-                        binding.packname.text = item.name
-                        binding.packauthor.text = item.author
-                        binding.packdown.setOnClickListener {
-                            // TODO: Download
-                        }
-                        binding.parent.setOnClickListener {
-                            // TODO: Open
+                            .into(binding.con)
+                        binding.con.setOnClickListener {
+                            item.selected = !item.selected
+                            binding.checkBox.isChecked = item.selected
                         }
                     }
                 }
             }
-            else -> {
-                with(holder as HeaderViewHolder){
+            C.VIEW_TYPE_HEADER -> {
+                with(holder as DetailAdapter.HeaderViewHolder) {
                     (packList[position] as String).let { item ->
                         binding.header.text = item
                     }
@@ -100,16 +93,15 @@ class ConPackAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             }
         }
 
-
     }
 
     override fun getItemCount(): Int = packList.size
 
     override fun getItemViewType(position: Int): Int {
-        return if (packList[position] is ConPack) C.VIEW_TYPE_CONPACK
+        return if (packList[position] is ConData) C.VIEW_TYPE_CONIMG
         else C.VIEW_TYPE_HEADER
     }
 
-    inner class ConPackViewHolder(val binding: RecyclerConpackBinding) : RecyclerView.ViewHolder(binding.root)
+    inner class ConImgViewHolder(val binding: RecyclerConimgBinding) : RecyclerView.ViewHolder(binding.root)
     inner class HeaderViewHolder(val binding: RecyclerHeaderBinding) : RecyclerView.ViewHolder(binding.root)
 }

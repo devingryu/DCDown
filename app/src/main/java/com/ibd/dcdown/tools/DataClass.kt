@@ -1,4 +1,4 @@
-package com.ibd.dcdown
+package com.ibd.dcdown.tools
 
 import java.io.Serializable
 
