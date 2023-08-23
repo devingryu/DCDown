@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.ViewCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.GridLayoutManager
 import com.bumptech.glide.Glide
@@ -19,6 +20,7 @@ import com.ibd.dcdown.tools.Utility.themeColor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 class DetailFragment : Fragment() {
@@ -32,7 +34,7 @@ class DetailFragment : Fragment() {
             drawingViewId = R.id.nav_host_fragment
             duration = 400
             scrimColor = Color.TRANSPARENT
-            setAllContainerColors(requireContext().themeColor(R.attr.colorSurface))
+            setAllContainerColors(requireContext().themeColor(com.google.android.material.R.attr.colorSurface))
         }
 
     }
@@ -60,6 +62,16 @@ class DetailFragment : Fragment() {
             .apply(requestOptions)
             .thumbnail(0.1f)
             .into(binding.packimg)
+
+        lifecycleScope.launch {
+            withContext(Dispatchers.Default) {
+                val data = Crawler.crawlCon(args.index)
+                withContext(Dispatchers.Main) {
+                    adapter.addData(data.data)
+                    binding.header.text = data.name
+                }
+            }
+        }
 
         CoroutineScope(Dispatchers.Default).launch {
             val data = Crawler.crawlCon(args.index)

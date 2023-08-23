@@ -50,7 +50,7 @@ class MainActivity : AppCompatActivity() {
             R.id.back_button ->0
             else -> 1
         }
-        val menu = arrayListOf(binding.menuHot,binding.menuNew,binding.menuRecent,binding.menuUser)
+        val menu = arrayListOf(binding.menuHot,binding.menuNew,binding.menuRecent,binding.menuSettings)
         menu.forEachIndexed { index, imageButton ->
             imageButton.colorFilter = null
             imageButton.setColorFilter(

@@ -15,7 +15,8 @@
         android:theme="@style/Theme.DCDown"
         android:requestLegacyExternalStorage="true">
 
-        <activity android:name=".main.MainActivity">
+        <activity android:name=".main.MainActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
