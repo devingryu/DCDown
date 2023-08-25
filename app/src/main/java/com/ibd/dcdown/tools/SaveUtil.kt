@@ -9,7 +9,12 @@ import net.lingala.zip4j.ZipFile
 import java.io.File
 
 object SaveUtil {
-    fun saveConPack(context:Context, pack:ConPack, target: String="/storage/emulated/0/DCDown/", archive:Boolean = false): Int {
+    fun saveConPack(
+        context: Context,
+        pack: ConPack,
+        target: String = "/storage/emulated/0/DCDown/",
+        archive: Boolean = false
+    ): Int {
         var errorCount = 0
         val data = if (pack.data.isEmpty()) {
             val ret = Crawler.crawlCon(pack.idx).data
@@ -17,16 +22,15 @@ object SaveUtil {
                 it.selected = true
             }
             ret
-        }
-        else
+        } else
             pack.data
 
 
-        if(archive) {
+        if (archive) {
             File(target).mkdirs()
             val zipFile = ZipFile("${target}${pack.name}.zip")
             data.forEach {
-                if(it.selected) {
+                if (it.selected) {
                     val image =
                         getImage(context, "https://dcimg5.dcinside.com/dccon.php?no=${it.uri}")
                     val fileToWrite = File(context.cacheDir, "${it.name}.${it.ext}")
@@ -39,7 +43,7 @@ object SaveUtil {
             File(parentTarget).mkdirs()
 
             data.forEach {
-                if(it.selected) {
+                if (it.selected) {
                     val image =
                         getImage(context, "https://dcimg5.dcinside.com/dccon.php?no=${it.uri}")
                     val targetFile = File(parentTarget, "${it.name.removeURIError()}.${it.ext}")
@@ -54,7 +58,8 @@ object SaveUtil {
         return errorCount
 
     }
-    private fun saveConData(data:File, target:File) =
+
+    private fun saveConData(data: File, target: File) =
         target.writeBytes(data.readBytes())
 
     private fun getImage(context: Context, uri: String): File =

@@ -18,7 +18,6 @@ object Crawler {
      * 이떄, uri는 인기, 신규, 검색 사이트여야 합니다.
      * @return 디시콘 팩 데이터가 리스트로 제공됩니다. 에러가 발생하면 null이 제공됩니다.
      */
-
     fun crawlPack(uri: String) : ArrayList<ConPack>? {
         val res : ArrayList<ConPack> = arrayListOf()
         val doc: Document

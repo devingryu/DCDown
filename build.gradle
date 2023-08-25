@@ -3,7 +3,7 @@ buildscript {
     ext.kotlin_version = "1.9.10"
     repositories {
         google()
-        jcenter()
+        mavenCentral()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:8.0.2'
@@ -15,10 +15,14 @@ buildscript {
     }
 }
 
+plugins {
+    id 'com.google.dagger.hilt.android' version '2.44' apply false
+}
+
 allprojects {
     repositories {
         google()
-        jcenter()
+        mavenCentral()
     }
 }
 
