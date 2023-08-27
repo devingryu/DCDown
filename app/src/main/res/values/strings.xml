@@ -1,25 +1,13 @@
 <resources>
     <string name="app_name">DCDown</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="select_all">전체 선택</string>
     <string name="search">검색</string>
     <string name="load_end">모두 로드했습니다</string>
     <string name="select_download_manner">다운로드 방식 선택</string>
     <string name="main_detail_transition_name">mainDetailTransition%1$s</string>
     <string name="detail_transition_name">detailTransition</string>
-    <!-- Preference Titles -->
-    <string name="messages_header">Messages</string>
-    <string name="sync_header">Sync</string>
 
-    <!-- Messages Preferences -->
-    <string name="signature_title">Your signature</string>
-    <string name="reply_title">Default reply action</string>
-
-    <!-- Sync Preferences -->
-    <string name="sync_title">Sync email periodically</string>
-    <string name="attachment_title">Download incoming attachments</string>
-    <string name="attachment_summary_on">Automatically download attachments for incoming emails
-    </string>
-    <string name="attachment_summary_off">Only download attachments when manually requested</string>
+    <string name="home">홈</string>
+    <string name="purchase_list">구입목록</string>
+    <string name="more">더보기</string>
 </resources>
