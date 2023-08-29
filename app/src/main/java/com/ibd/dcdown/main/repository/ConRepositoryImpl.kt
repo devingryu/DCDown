@@ -12,8 +12,9 @@ import javax.inject.Singleton
 @Singleton
 class ConRepositoryImpl @Inject constructor(): ConRepository {
     override suspend fun requestConPacks(uri: String): List<ConPack>? {
-        val doc: Document = runCatching { Jsoup.connect(uri).timeout(6000).get() }.getOrNull()
-            ?: return null
+        val doc: Document = runCatching { Jsoup.connect(uri).timeout(6000).get() }.onFailure {
+            it.printStackTrace()
+        }.getOrNull() ?: return null
 
         return buildList {
             val contents1: Elements = doc.select("ul.dccon_shop_list.clear")
