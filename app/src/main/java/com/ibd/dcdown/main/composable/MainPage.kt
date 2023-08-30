@@ -2,26 +2,40 @@ package com.ibd.dcdown.main.composable
 
 import android.widget.Toast
 import androidx.annotation.StringRes
+import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.NewReleases
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.Whatshot
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.surfaceColorAtElevation
@@ -30,7 +44,9 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -58,7 +74,6 @@ fun MainPage() {
     val useDarkIcons = !isSystemInDarkTheme()
     val statusBarColor = MaterialTheme.colorScheme.surface
     val navBarColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     DisposableEffect(systemUiController, useDarkIcons) {
         systemUiController.setStatusBarColor(statusBarColor, useDarkIcons)
         systemUiController.setNavigationBarColor(navBarColor, useDarkIcons)
@@ -73,12 +88,18 @@ fun MainPage() {
     )
 
     Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        modifier = Modifier.background(MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)),
         topBar = {
-            LargeTopAppBar(
+            TopAppBar(
                 title = { Text("홈") },
-                scrollBehavior = scrollBehavior,
-                colors = TopAppBarDefaults.largeTopAppBarColors(scrolledContainerColor = MaterialTheme.colorScheme.surface)
+                actions = {
+                    IconButton(onClick = { /*TODO*/ }) {
+                        Icon(
+                            imageVector = Icons.Filled.Search,
+                            contentDescription = "Search"
+                        )
+                    }
+                }
             )
         },
         bottomBar = {
@@ -131,6 +152,7 @@ private fun MainHomeScreen(
         if (vm.list.isEmpty())
             vm.requestList(true)
     }
+
     val event by vm.eventChannel.collectAsState(initial = null)
     val context = LocalContext.current
     LaunchedEffect(event) {
@@ -144,11 +166,38 @@ private fun MainHomeScreen(
             }
         }
     }
-    ConPackList(data = vm.list, isLoading = vm.isLoadingMore, {
 
-    }, {
-        vm.requestList(false)
-    })
+    val filter = listOf(Filter.Hot, Filter.New)
+    Box(Modifier.fillMaxSize()) {
+        if (vm.isRefreshing)
+            CircularProgressIndicator(Modifier.size(24.dp).align(Alignment.Center))
+        Column(Modifier.fillMaxSize()) {
+            Row(Modifier.padding(start = 12.dp, bottom = 8.dp)) {
+                filter.forEach {
+                    val isSelected = vm.filter == it.id
+                    FilterChip(text = it.label, isSelected = isSelected, headingIcon = {
+                        Icon(
+                            it.icon,
+                            null,
+                            tint = if (!isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onPrimary
+                        )
+                    }, onClick = { vm.changeFilter(it.id) })
+                    Spacer(Modifier.width(4.dp))
+                }
+            }
+            ConPackList(
+                modifier = Modifier.clip(RoundedCornerShape(12.dp)),
+                data = vm.list,
+                isLoading = vm.isLoadingMore,
+                {
+                },
+                {
+                    vm.requestList(false)
+                }
+            )
+        }
+    }
+
 }
 
 @Composable
@@ -193,4 +242,14 @@ sealed class MainScreen(
         )
 
     object More : MainScreen("more", R.string.more, Icons.Outlined.Settings, Icons.Filled.Settings)
+}
+
+private sealed class Filter(
+    val id: Int,
+    val icon: ImageVector,
+    val iconTint: Color,
+    val label: String
+) {
+    object Hot : Filter(0, Icons.Filled.Whatshot, Color.Red, "인기")
+    object New : Filter(1, Icons.Filled.NewReleases, Color.Yellow, "신규")
 }

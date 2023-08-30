@@ -45,6 +45,7 @@ import com.ibd.dcdown.ui.theme.Gray200
 
 @Composable
 fun ConPackList(
+    modifier: Modifier = Modifier,
     data: List<ConPack>,
     isLoading: Boolean,
     onClick: (ConPack) -> Unit,
@@ -53,7 +54,7 @@ fun ConPackList(
     val listState = rememberLazyListState().apply {
         OnBottomReached(onLoadMore)
     }
-    LazyColumn(state = listState, contentPadding = PaddingValues(bottom = 64.dp)) {
+    LazyColumn(modifier = modifier, state = listState, contentPadding = PaddingValues(bottom = 64.dp)) {
         items(data, key = { it.idx }) {
             ConPackListItem(data = it, Modifier.clickable { onClick(it) })
         }

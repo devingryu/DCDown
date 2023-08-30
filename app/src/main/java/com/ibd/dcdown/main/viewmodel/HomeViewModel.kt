@@ -32,28 +32,35 @@ class HomeViewModel @Inject constructor(
     private var idx = 1
     var list = mutableStateListOf<ConPack>()
         private set
+    var isRefreshing by mutableStateOf(false)
+        private set
     var isLoadingMore by mutableStateOf(false)
         private set
     var filter by mutableStateOf<@C.FilterType Int>(1)
         private set
 
     fun requestList(isRefresh: Boolean) = viewModelScope.launch {
-        if (isRefresh)
+        if (isRefreshing || isLoadingMore) return@launch
+        if (isRefresh) {
             idx = 1
+            list.clear()
+        }
 
         val loc = if (filter == C.FILTER_HOT) "hot" else "new"
         val url = "https://dccon.dcinside.com/$loc/${idx++}"
         withContext(Dispatchers.Default) {
-            isLoadingMore = true
+            if (isRefresh) isRefreshing = true
+            else isLoadingMore = true
             runCatching { cr.requestConPacks(url) }
                 .also {
-                    isLoadingMore = false
+                    if (isRefresh) isRefreshing = false
+                    else isLoadingMore = false
                 }.onFailure {
                     sendEvent(E.Toast(it.localizedMessage))
                 }.onSuccess {
                     if (it != null) {
-                        if (isRefresh)
-                            list.clear()
+//                        if (isRefresh)
+//                            list.clear()
                         list.addAll(it)
                         println(it)
                     } else {
