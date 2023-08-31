@@ -11,6 +11,7 @@ import com.ibd.dcdown.dto.ConPack
 import com.ibd.dcdown.main.repository.ExternalStorageRepository
 import com.ibd.dcdown.repository.ConRepository
 import com.ibd.dcdown.repository.DataStoreRepository
+import com.ibd.dcdown.tools.C
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
@@ -59,7 +60,6 @@ class DetailViewModel @Inject constructor(
         runCatching { cr.requestConPack(id) }
             .also { isLoading = false }
             .onSuccess {
-                println(it)
                 data = it
                 list.clear()
                 list.addAll(it.data)
@@ -69,13 +69,22 @@ class DetailViewModel @Inject constructor(
 
     }
 
-    fun requestSave(list: List<ConData>) = viewModelScope.launch {
+    private fun requestSave(list: List<ConData>, baseDir: String) = viewModelScope.launch {
         if (list.isEmpty()) return@launch
         val errors = esr.saveImages(
-            "/DCDown/",
-            list.map { "${it.name}.${it.ext}" to "https://dcimg5.dcinside.com/dccon.php?no=${it.uri}" }
+            baseDir,
+            list.map { "${it.name}.${it.ext}" to "${C.IMG_BASE_URL}${it.uri}" }
         )
-        sendEvent(E.Toast("${errors.size - list.size}/${list.size}개 다운로드 성공"))
+        println(errors)
+        sendEvent(E.Toast("${list.size - errors.size}/${list.size}개 다운로드 성공"))
+    }
+
+    fun requestSaveSelected(ignoreSelection: Boolean) {
+        data?.let { data ->
+            val dir = "/DCDown/${data.name}/"
+            val list = if (ignoreSelection) ArrayList(list) else list.filter { it.selected }
+            requestSave(list, dir)
+        }
     }
 
     private fun sendEvent(e: E) = viewModelScope.launch {

@@ -6,16 +6,18 @@ import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.media.MediaScannerConnection
 import android.os.Environment
+import android.os.FileUtils
 import android.provider.MediaStore
 import android.webkit.MimeTypeMap
 import androidx.compose.ui.graphics.Path
-import coil.ImageLoader
-import coil.request.ImageRequest
-import coil.request.SuccessResult
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.model.GlideUrl
+import com.ibd.dcdown.tools.C
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.net.URLEncoder
 import java.nio.file.Paths
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -24,9 +26,11 @@ import javax.inject.Singleton
 class ExternalStorageRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context
 ) : ExternalStorageRepository {
-    private fun saveImage(baseDir: String, fileName: String, bitmap: Bitmap): String? {
+    private fun saveImage(baseDir: String, fileName: String, data: File): String? {
         val contentResolver = context.contentResolver
-        val mime = MimeTypeMap.getFileExtensionFromUrl(fileName)?.let {
+        val encoded = URLEncoder.encode(fileName, "UTF-8").replace("+", "%20")
+        println(encoded)
+        val mime = MimeTypeMap.getFileExtensionFromUrl(encoded)?.let {
             MimeTypeMap.getSingleton().getMimeTypeFromExtension(it)
         } ?: throw Exception("$fileName: 확장자가 올바르지 않습니다.")
         val relDir = File(Environment.DIRECTORY_PICTURES, baseDir).path
@@ -41,10 +45,13 @@ class ExternalStorageRepositoryImpl @Inject constructor(
             contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
                 ?: throw Exception("$fileName: 파일을 생성하지 못했습니다.")
         try {
-            val outputStream = contentResolver.openOutputStream(imageUri)
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
-            outputStream?.flush()
-            outputStream?.close()
+            val outputStream = contentResolver.openOutputStream(imageUri, "rwt")
+                ?: throw Exception("$fileName: 파일을 열지 못했습니다.")
+            data.inputStream().use { input ->
+                outputStream.use { output ->
+                    input.copyTo(output)
+                }
+            }
 
             return imageUri.path
         } catch (e: Exception) {
@@ -52,20 +59,19 @@ class ExternalStorageRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun saveImages(baseDir: String, files: List<Pair<String, String>>): List<String?> =
+    override suspend fun saveImages(
+        baseDir: String,
+        files: List<Pair<String, String>>
+    ): List<String?> =
         buildList {
             val successful = ArrayList<String>()
-            val loader = ImageLoader(context)
+            val loader = Glide.with(context).downloadOnly()
             for (file in files) {
                 try {
-                    val bitmap = withContext(Dispatchers.Default) {
-                        val request = ImageRequest.Builder(context)
-                            .data(file.second)
-                            .allowHardware(false)
-                            .build()
-
-                        val result = (loader.execute(request) as? SuccessResult)?.drawable
-                        (result as? BitmapDrawable)?.bitmap
+                    val bitmap = withContext(Dispatchers.IO) {
+                        loader.load(GlideUrl(file.second) {
+                            mapOf("Referer" to C.DEFAULT_REFERER)
+                        }).submit().get()
                     } ?: throw Exception("${file.first}: 파일을 다운로드하지 못했습니다.")
                     val dir = saveImage(baseDir, file.first, bitmap)
                     if (dir != null)
