@@ -1,6 +1,7 @@
 package com.ibd.dcdown.main.composable
 
 import android.content.Intent
+import android.os.Environment
 import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -92,6 +93,7 @@ fun MainPage() {
         MainScreen.History,
         MainScreen.More
     )
+    Environment.getExternalStorageDirectory()
 
     Scaffold(
         bottomBar = {

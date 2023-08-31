@@ -1,5 +1,7 @@
 package com.ibd.dcdown.hilt
 
+import com.ibd.dcdown.main.repository.ExternalStorageRepository
+import com.ibd.dcdown.main.repository.ExternalStorageRepositoryImpl
 import com.ibd.dcdown.repository.ConRepository
 import com.ibd.dcdown.repository.ConRepositoryImpl
 import com.ibd.dcdown.repository.DataStoreRepository
@@ -13,7 +15,11 @@ import dagger.hilt.components.SingletonComponent
 @InstallIn(SingletonComponent::class)
 interface RepositoryModule {
     @Binds
-    fun provideDataStoreRepositoryImpl(repository: DataStoreRepositoryImpl): DataStoreRepository
+    fun provideDataStoreRepositoryImpl(repositoryImpl: DataStoreRepositoryImpl): DataStoreRepository
+
     @Binds
     fun provideConRepositoryImpl(repositoryImpl: ConRepositoryImpl): ConRepository
+
+    @Binds
+    fun provideExternalStorageRepositoryImpl(repositoryImpl: ExternalStorageRepositoryImpl): ExternalStorageRepository
 }

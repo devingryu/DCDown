@@ -47,25 +47,27 @@ class HomeViewModel @Inject constructor(
 
         val loc = if (filter == C.FILTER_HOT) "hot" else "new"
         val url = "https://dccon.dcinside.com/$loc/${idx++}"
-        withContext(Dispatchers.Default) {
-            if (isRefresh) isRefreshing = true
-            else isLoadingMore = true
-            runCatching { cr.requestConPacks(url) }
-                .also {
-                    if (isRefresh) isRefreshing = false
-                    else isLoadingMore = false
-                }.onFailure {
-                    sendEvent(E.Toast(it.localizedMessage))
-                }.onSuccess {
-                    if (it != null) {
+
+        if (isRefresh)
+            isRefreshing = true
+        else
+            isLoadingMore = true
+        runCatching { cr.requestConPacks(url) }
+            .also {
+                if (isRefresh) isRefreshing = false
+                else isLoadingMore = false
+            }.onFailure {
+                sendEvent(E.Toast(it.localizedMessage))
+            }.onSuccess {
+                if (it != null) {
 //                        if (isRefresh)
 //                            list.clear()
-                        list.addAll(it)
-                    } else {
-                        sendEvent(E.Toast("오류가 발생했습니다."))
-                    }
+                    list.addAll(it)
+                } else {
+                    sendEvent(E.Toast("오류가 발생했습니다."))
                 }
-        }
+            }
+
     }
 
     private fun sendEvent(e: E) = viewModelScope.launch {

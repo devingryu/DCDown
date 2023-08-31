@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ibd.dcdown.dto.ConData
 import com.ibd.dcdown.dto.ConPack
+import com.ibd.dcdown.main.repository.ExternalStorageRepository
 import com.ibd.dcdown.repository.ConRepository
 import com.ibd.dcdown.repository.DataStoreRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,8 +22,9 @@ import javax.inject.Inject
 @HiltViewModel
 class DetailViewModel @Inject constructor(
     private val ds: DataStoreRepository,
-    private val cr: ConRepository
-): ViewModel() {
+    private val cr: ConRepository,
+    private val esr: ExternalStorageRepository,
+) : ViewModel() {
     private val _eventChannel = Channel<E>()
     val eventChannel = _eventChannel.receiveAsFlow()
 
@@ -54,22 +56,32 @@ class DetailViewModel @Inject constructor(
         isLoading = true
 
         this@DetailViewModel.id = id
-        withContext(Dispatchers.Default) {
-            runCatching { cr.requestConPack(id) }
-                .also { isLoading = false }
-                .onSuccess {
-                    println(it)
-                    data = it
-                    list.clear()
-                    list.addAll(it.data)
-                }.onFailure {
-                    sendEvent(E.Toast(it.message))
-                }
-        }
+        runCatching { cr.requestConPack(id) }
+            .also { isLoading = false }
+            .onSuccess {
+                println(it)
+                data = it
+                list.clear()
+                list.addAll(it.data)
+            }.onFailure {
+                sendEvent(E.Toast(it.message))
+            }
+
     }
+
+    fun requestSave(list: List<ConData>) = viewModelScope.launch {
+        if (list.isEmpty()) return@launch
+        val errors = esr.saveImages(
+            "/DCDown/",
+            list.map { "${it.name}.${it.ext}" to "https://dcimg5.dcinside.com/dccon.php?no=${it.uri}" }
+        )
+        sendEvent(E.Toast("${errors.size - list.size}/${list.size}개 다운로드 성공"))
+    }
+
     private fun sendEvent(e: E) = viewModelScope.launch {
         _eventChannel.send(e)
     }
+
     sealed interface E {
         data class Toast(val message: String?) : E
     }

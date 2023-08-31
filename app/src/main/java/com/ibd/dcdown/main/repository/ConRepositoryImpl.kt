@@ -2,6 +2,8 @@ package com.ibd.dcdown.repository
 
 import com.ibd.dcdown.dto.ConData
 import com.ibd.dcdown.dto.ConPack
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
@@ -10,11 +12,11 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class ConRepositoryImpl @Inject constructor(): ConRepository {
+class ConRepositoryImpl @Inject constructor() : ConRepository {
     override suspend fun requestConPacks(uri: String): List<ConPack>? {
-        val doc: Document = runCatching { Jsoup.connect(uri).timeout(6000).get() }.onFailure {
-            it.printStackTrace()
-        }.getOrNull() ?: return null
+        val doc: Document = withContext(Dispatchers.Default) {
+            Jsoup.connect(uri).timeout(6000).get()
+        }
 
         return buildList {
             val contents1: Elements = doc.select("ul.dccon_shop_list.clear")
@@ -40,12 +42,14 @@ class ConRepositoryImpl @Inject constructor(): ConRepository {
 
         val conArray: ArrayList<ConData> = arrayListOf()
         val res: String =
-            Jsoup.connect("https://dccon.dcinside.com/index/package_detail")
-                .data("package_idx", id)
-                .ignoreContentType(true)
-                .header("x-requested-with", "XMLHttpRequest")
-                .post()
-                .text()
+            withContext(Dispatchers.Default) {
+                Jsoup.connect("https://dccon.dcinside.com/index/package_detail")
+                    .data("package_idx", id)
+                    .ignoreContentType(true)
+                    .header("x-requested-with", "XMLHttpRequest")
+                    .post()
+                    .text()
+            }
 
         val response = JSONObject(res)
 
