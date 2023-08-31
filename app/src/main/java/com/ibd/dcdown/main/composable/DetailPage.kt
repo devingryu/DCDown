@@ -7,7 +7,9 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -113,7 +115,7 @@ fun DetailPage(id: String, vm: DetailViewModel = hiltViewModel()) {
                 GlideImage(
                     model = GlideUrl("${C.IMG_BASE_URL}${it.uri}") { mapOf("Referer" to C.DEFAULT_REFERER) },
                     loading = placeholder(R.drawable.baseline_downloading_24),
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxWidth().aspectRatio(1f),
                     contentDescription = it.name,
                     contentScale = ContentScale.Crop
                 )
