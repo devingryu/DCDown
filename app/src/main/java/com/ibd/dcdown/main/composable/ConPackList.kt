@@ -16,11 +16,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -48,15 +47,17 @@ fun ConPackList(
     modifier: Modifier = Modifier,
     data: List<ConPack>,
     isLoading: Boolean,
-    onClick: (ConPack) -> Unit,
-    onLoadMore: () -> Unit
+    header: LazyListScope.() -> Unit = {},
+    onClickItem: (ConPack) -> Unit = {},
+    onLoadMore: () -> Unit = {}
 ) {
     val listState = rememberLazyListState().apply {
         OnBottomReached(onLoadMore)
     }
     LazyColumn(modifier = modifier, state = listState, contentPadding = PaddingValues(bottom = 64.dp)) {
+        header()
         items(data, key = { it.idx }) {
-            ConPackListItem(data = it, Modifier.clickable { onClick(it) })
+            ConPackListItem(data = it, Modifier.clickable { onClickItem(it) })
         }
         if (isLoading)
             item {

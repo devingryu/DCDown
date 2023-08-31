@@ -57,6 +57,7 @@ class ConRepositoryImpl @Inject constructor(): ConRepository {
             val v = json.getJSONObject(i)
             conArray.add(
                 ConData(
+                    v.getString("idx"),
                     v.getString("title"),
                     v.getString("ext"),
                     v.getString("path"),

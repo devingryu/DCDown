@@ -24,8 +24,7 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     private val ds: DataStoreRepository,
     private val cr: ConRepository
-) :
-    ViewModel() {
+) : ViewModel() {
     private val _eventChannel = Channel<E>()
     val eventChannel = _eventChannel.receiveAsFlow()
 
@@ -62,7 +61,6 @@ class HomeViewModel @Inject constructor(
 //                        if (isRefresh)
 //                            list.clear()
                         list.addAll(it)
-                        println(it)
                     } else {
                         sendEvent(E.Toast("오류가 발생했습니다."))
                     }

@@ -1,7 +1,9 @@
 package com.ibd.dcdown.main.composable
 
+import android.content.Intent
 import android.widget.Toast
 import androidx.annotation.StringRes
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -10,6 +12,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -63,6 +66,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.ibd.dcdown.R
+import com.ibd.dcdown.main.view.DetailActivity
 import com.ibd.dcdown.main.viewmodel.HomeViewModel
 import com.ibd.dcdown.tools.C
 import okhttp3.internal.wait
@@ -81,6 +85,8 @@ fun MainPage() {
     }
 
     val navController = rememberNavController()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
     val screens = listOf(
         MainScreen.Home,
         MainScreen.History,
@@ -88,24 +94,8 @@ fun MainPage() {
     )
 
     Scaffold(
-        modifier = Modifier.background(MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)),
-        topBar = {
-            TopAppBar(
-                title = { Text("홈") },
-                actions = {
-                    IconButton(onClick = { /*TODO*/ }) {
-                        Icon(
-                            imageVector = Icons.Filled.Search,
-                            contentDescription = "Search"
-                        )
-                    }
-                }
-            )
-        },
         bottomBar = {
             NavigationBar {
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
-                val currentDestination = navBackStackEntry?.destination
                 screens.forEach { screen ->
                     val selected =
                         currentDestination?.hierarchy?.any { it.route == screen.route } == true
@@ -144,6 +134,7 @@ fun MainPage() {
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun MainHomeScreen(
     vm: HomeViewModel = hiltViewModel()
@@ -170,28 +161,52 @@ private fun MainHomeScreen(
     val filter = listOf(Filter.Hot, Filter.New)
     Box(Modifier.fillMaxSize()) {
         if (vm.isRefreshing)
-            CircularProgressIndicator(Modifier.size(24.dp).align(Alignment.Center))
+            CircularProgressIndicator(
+                Modifier
+                    .size(24.dp)
+                    .align(Alignment.Center)
+            )
         Column(Modifier.fillMaxSize()) {
-            Row(Modifier.padding(start = 12.dp, bottom = 8.dp)) {
-                filter.forEach {
-                    val isSelected = vm.filter == it.id
-                    FilterChip(text = it.label, isSelected = isSelected, headingIcon = {
-                        Icon(
-                            it.icon,
-                            null,
-                            tint = if (!isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onPrimary
-                        )
-                    }, onClick = { vm.changeFilter(it.id) })
-                    Spacer(Modifier.width(4.dp))
-                }
-            }
             ConPackList(
                 modifier = Modifier.clip(RoundedCornerShape(12.dp)),
                 data = vm.list,
                 isLoading = vm.isLoadingMore,
-                {
-                },
-                {
+                header = {
+                    item {
+                        Text(
+                            stringResource(R.string.home),
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp, 64.dp, 0.dp, 8.dp),
+                            style = MaterialTheme.typography.headlineLarge
+                        )
+                    }
+                    stickyHeader {
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.surface)
+                                .padding(start = 12.dp, bottom = 8.dp, top = 8.dp)
+                        ) {
+                            filter.forEach {
+                                val isSelected = vm.filter == it.id
+                                FilterChip(text = it.label, isSelected = isSelected, headingIcon = {
+                                    Icon(
+                                        it.icon,
+                                        null,
+                                        tint = if (!isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onPrimary
+                                    )
+                                }, onClick = { vm.changeFilter(it.id) })
+                                Spacer(Modifier.width(4.dp))
+                            }
+                        }
+                    }
+                }, onClickItem = {
+                    Intent(context, DetailActivity::class.java).apply {
+                        putExtra("id", it.idx)
+                        context.startActivity(this)
+                    }
+                }, onLoadMore = {
                     vm.requestList(false)
                 }
             )

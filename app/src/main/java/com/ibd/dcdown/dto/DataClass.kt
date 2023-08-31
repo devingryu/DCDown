@@ -30,10 +30,11 @@ data class ConPack(
  * @param selected 선택 여부(선택 저장 시 사용, 기본값 false)
  */
 data class ConData(
+    val id: String,
     val name: String,
     val ext: String,
     val uri: String,
-    var selected: Boolean = false
+    val selected: Boolean = false
 ) : Serializable {
     companion object {
         private const val serialVersionUID: Long = 1L

@@ -10,4 +10,6 @@
     <string name="home">홈</string>
     <string name="purchase_list">구입목록</string>
     <string name="more">더보기</string>
+
+    <string name="to_back">이전으로</string>
 </resources>
