@@ -20,15 +20,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -36,14 +33,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.bumptech.glide.load.model.GlideUrl
+import com.ibd.dcdown.R
 import com.ibd.dcdown.dto.ConPack
 import com.ibd.dcdown.tools.C
 import com.ibd.dcdown.tools.Extensions.OnBottomReached
@@ -54,12 +54,14 @@ fun ConPackList(
     modifier: Modifier = Modifier,
     data: List<ConPack>,
     isLoading: Boolean,
+    hasMore: Boolean,
     header: LazyListScope.() -> Unit = {},
     onClickItem: (ConPack) -> Unit = {},
     onLoadMore: () -> Unit = {}
 ) {
     val listState = rememberLazyListState().apply {
-        OnBottomReached(onLoadMore)
+        if (!isLoading && hasMore)
+            OnBottomReached(onLoadMore)
     }
     LazyColumn(
         modifier = modifier,
@@ -70,6 +72,23 @@ fun ConPackList(
         items(data) {
             ConPackListItem(data = it, Modifier.clickable { onClickItem(it) })
         }
+        if (!hasMore)
+            item {
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp, bottom = 32.dp)
+                ) {
+                    Text(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = stringResource(id = R.string.load_end),
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            color = MaterialTheme.colorScheme.outline
+                        ),
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
         if (isLoading)
             item {
                 Box(
@@ -136,10 +155,14 @@ fun ConPackListItem(data: ConPack, modifier: Modifier = Modifier) {
             Icons.Filled.MoreVert,
             null,
             tint = MaterialTheme.colorScheme.outline,
-            modifier = Modifier.align(Alignment.TopEnd).padding(end = 6.dp, top = 16.dp).clickable (
-                interactionSource = remember { MutableInteractionSource() },
-                indication = rememberRipple(bounded = false, radius = 16.dp),
-            ) { }.size(18.dp)
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(end = 6.dp, top = 16.dp)
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = rememberRipple(bounded = false, radius = 16.dp),
+                ) { }
+                .size(18.dp)
         )
     }
 }

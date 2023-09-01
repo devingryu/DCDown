@@ -1,9 +1,12 @@
 package com.ibd.dcdown.main.composable
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Environment
 import android.widget.Toast
 import androidx.annotation.StringRes
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -21,6 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.NewReleases
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingCart
@@ -28,20 +32,15 @@ import androidx.compose.material.icons.filled.Whatshot
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.ShoppingCart
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarColors
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -53,12 +52,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -68,11 +65,9 @@ import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.ibd.dcdown.R
 import com.ibd.dcdown.main.view.DetailActivity
+import com.ibd.dcdown.main.view.SearchActivity
 import com.ibd.dcdown.main.viewmodel.HomeViewModel
-import com.ibd.dcdown.tools.C
-import okhttp3.internal.wait
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainPage() {
     val systemUiController = rememberSystemUiController()
@@ -85,6 +80,7 @@ fun MainPage() {
         onDispose { }
     }
 
+    val context = LocalContext.current
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
@@ -93,8 +89,6 @@ fun MainPage() {
         MainScreen.History,
         MainScreen.More
     )
-    Environment.getExternalStorageDirectory()
-
     Scaffold(
         bottomBar = {
             NavigationBar {
@@ -121,15 +115,25 @@ fun MainPage() {
                         })
                 }
             }
+        },
+        floatingActionButton = {
+            if (currentDestination?.hierarchy?.any { it.route == MainScreen.Home.route } == true) {
+                FloatingActionButton(onClick = {
+                    Intent(context, SearchActivity::class.java).apply {
+                        context.startActivity(this)
+                    }
+                }) {
+                    Icon(Icons.Filled.Search, stringResource(R.string.save))
+                }
+            }
         }
     ) { innerPadding ->
         NavHost(
             modifier = Modifier.padding(innerPadding),
             navController = navController,
-            startDestination = MainScreen.Home.route
+            startDestination = MainScreen.Home.route,
         ) {
             composable("home") { MainHomeScreen() }
-            composable("search") { MainSearchScreen() }
             composable("history") { MainHistoryScreen() }
             composable("more") { MainMoreScreen() }
         }
@@ -173,6 +177,7 @@ private fun MainHomeScreen(
                 modifier = Modifier.clip(RoundedCornerShape(12.dp)),
                 data = vm.list,
                 isLoading = vm.isLoadingMore,
+                hasMore = true,
                 header = {
                     item {
                         Text(
@@ -214,15 +219,6 @@ private fun MainHomeScreen(
             )
         }
     }
-
-}
-
-@Composable
-private fun MainSearchScreen(
-) {
-    Column(verticalArrangement = Arrangement.Center) {
-        Text("Search")
-    }
 }
 
 @Composable
@@ -261,12 +257,11 @@ sealed class MainScreen(
     object More : MainScreen("more", R.string.more, Icons.Outlined.Settings, Icons.Filled.Settings)
 }
 
-private sealed class Filter(
+sealed class Filter(
     val id: Int,
     val icon: ImageVector,
-    val iconTint: Color,
     val label: String
 ) {
-    object Hot : Filter(0, Icons.Filled.Whatshot, Color.Red, "인기")
-    object New : Filter(1, Icons.Filled.NewReleases, Color.Yellow, "신규")
+    object Hot : Filter(0, Icons.Filled.Whatshot, "인기")
+    object New : Filter(1, Icons.Filled.NewReleases,"신규")
 }
