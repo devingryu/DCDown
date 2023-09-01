@@ -6,6 +6,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,10 +16,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Deselect
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -93,7 +97,16 @@ fun DetailPage(id: String, vm: DetailViewModel = hiltViewModel()) {
                     }
                 },
                 colors = TopAppBarDefaults.mediumTopAppBarColors(scrolledContainerColor = MaterialTheme.colorScheme.surface),
-                scrollBehavior = scrollBehavior
+                scrollBehavior = scrollBehavior,
+                actions = {
+                    IconButton(onClick = { vm.toggleAll() }) {
+                        val isSelectedAll = vm.list.all { it.selected }
+                        Icon(
+                            if (isSelectedAll) Icons.Filled.Deselect else Icons.Filled.SelectAll,
+                            stringResource(if (isSelectedAll) R.string.deselect else R.string.select_all)
+                        )
+                    }
+                }
             )
         },
         floatingActionButton = {
@@ -106,19 +119,30 @@ fun DetailPage(id: String, vm: DetailViewModel = hiltViewModel()) {
             modifier = Modifier
                 .padding(paddingValues)
                 .nestedScroll(scrollBehavior.nestedScrollConnection),
-            contentPadding = PaddingValues(16.dp),
+            contentPadding = PaddingValues(start = 8.dp, top = 8.dp, end = 8.dp, bottom = 128.dp),
             columns = GridCells.Adaptive(minSize = 96.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+            horizontalArrangement = Arrangement.spacedBy(2.dp)
         ) {
             items(vm.list) {
-                GlideImage(
-                    model = GlideUrl("${C.IMG_BASE_URL}${it.uri}") { mapOf("Referer" to C.DEFAULT_REFERER) },
-                    loading = placeholder(R.drawable.baseline_downloading_24),
-                    modifier = Modifier.fillMaxWidth().aspectRatio(1f),
-                    contentDescription = it.name,
-                    contentScale = ContentScale.Crop
-                )
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1f)
+                        .toggleable(it.selected) { _ -> vm.toggle(it.id) }
+                ) {
+                    GlideImage(
+                        model = GlideUrl("${C.IMG_BASE_URL}${it.uri}") { mapOf("Referer" to C.DEFAULT_REFERER) },
+                        loading = placeholder(R.drawable.baseline_downloading_24),
+                        modifier = Modifier.fillMaxSize(),
+                        contentDescription = it.name,
+                        contentScale = ContentScale.Crop
+                    )
+                    CircleCheckBox(
+                        modifier = Modifier.align(Alignment.BottomEnd),
+                        isChecked = it.selected,
+                        onCheckedChange = { _ -> vm.toggle(it.id) })
+                }
             }
         }
     }
