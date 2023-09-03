@@ -64,6 +64,7 @@ class DetailViewModel @Inject constructor(
                 list.clear()
                 list.addAll(it.data)
             }.onFailure {
+
                 sendEvent(E.Toast(it.message))
             }
 
@@ -75,7 +76,6 @@ class DetailViewModel @Inject constructor(
             baseDir,
             list.map { "${it.name}.${it.ext}" to "${C.IMG_BASE_URL}${it.uri}" }
         )
-        println(errors)
         sendEvent(E.Toast("${list.size - errors.size}/${list.size}개 다운로드 성공"))
     }
 

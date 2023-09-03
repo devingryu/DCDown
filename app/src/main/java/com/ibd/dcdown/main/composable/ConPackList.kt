@@ -57,6 +57,7 @@ fun ConPackList(
     hasMore: Boolean,
     header: LazyListScope.() -> Unit = {},
     onClickItem: (ConPack) -> Unit = {},
+    onClickItemMore: (ConPack) -> Unit = {},
     onLoadMore: () -> Unit = {}
 ) {
     val listState = rememberLazyListState().apply {
@@ -70,7 +71,7 @@ fun ConPackList(
     ) {
         header()
         items(data) {
-            ConPackListItem(data = it, Modifier.clickable { onClickItem(it) })
+            ConPackListItem(data = it, modifier = Modifier.clickable { onClickItem(it) }, onMoreClick = { onClickItemMore(it) })
         }
         if (!hasMore)
             item {
@@ -109,7 +110,7 @@ fun ConPackList(
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-fun ConPackListItem(data: ConPack, modifier: Modifier = Modifier) {
+fun ConPackListItem(data: ConPack, modifier: Modifier = Modifier, onMoreClick: () -> Unit = {}) {
     Box(modifier = modifier.background(MaterialTheme.colorScheme.surface)) {
         Row(Modifier.padding(12.dp, 8.dp)) {
             GlideImage(
@@ -161,7 +162,8 @@ fun ConPackListItem(data: ConPack, modifier: Modifier = Modifier) {
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = rememberRipple(bounded = false, radius = 16.dp),
-                ) { }
+                    onClick = onMoreClick
+                )
                 .size(18.dp)
         )
     }

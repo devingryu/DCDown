@@ -37,16 +37,23 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -67,6 +74,7 @@ import com.ibd.dcdown.R
 import com.ibd.dcdown.main.view.DetailActivity
 import com.ibd.dcdown.main.view.SearchActivity
 import com.ibd.dcdown.main.viewmodel.HomeViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun MainPage() {
@@ -140,7 +148,7 @@ fun MainPage() {
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 private fun MainHomeScreen(
     vm: HomeViewModel = hiltViewModel()
@@ -149,6 +157,9 @@ private fun MainHomeScreen(
         if (vm.list.isEmpty())
             vm.requestList(true)
     }
+    val sheetState = rememberModalBottomSheetState()
+    var isSheetVisible by rememberSaveable { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
 
     val event by vm.eventChannel.collectAsState(initial = null)
     val context = LocalContext.current
@@ -213,11 +224,18 @@ private fun MainHomeScreen(
                         putExtra("id", it.idx)
                         context.startActivity(this)
                     }
+                }, onClickItemMore = {
+                    isSheetVisible = true
                 }, onLoadMore = {
                     vm.requestList(false)
                 }
             )
         }
+
+        if (isSheetVisible)
+            ModalBottomSheet(sheetState = sheetState, onDismissRequest = { isSheetVisible = false }) {
+                Text("MODAL", modifier = Modifier.padding(16.dp))
+            }
     }
 }
 

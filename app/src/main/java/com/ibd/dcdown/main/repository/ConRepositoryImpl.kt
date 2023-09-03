@@ -2,8 +2,12 @@ package com.ibd.dcdown.repository
 
 import com.ibd.dcdown.dto.ConData
 import com.ibd.dcdown.dto.ConPack
+import com.ibd.dcdown.tools.ServiceClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.FormBody
+import okhttp3.Request
+import okhttp3.RequestBody
 import org.json.JSONObject
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
@@ -43,14 +47,12 @@ class ConRepositoryImpl @Inject constructor() : ConRepository {
         val conArray: ArrayList<ConData> = arrayListOf()
         val res: String =
             withContext(Dispatchers.Default) {
-                Jsoup.connect("https://dccon.dcinside.com/index/package_detail")
-                    .data("package_idx", id)
-                    .ignoreContentType(true)
+                val request = Request.Builder().url("https://dccon.dcinside.com/index/package_detail")
                     .header("x-requested-with", "XMLHttpRequest")
-                    .post()
-                    .text()
+                    .post(FormBody.Builder().add("package_idx", id).build())
+                    .build()
+                ServiceClient.okHttp.newCall(request).execute().body!!.string()
             }
-
         val response = JSONObject(res)
 
         val json = response.getJSONArray("detail")

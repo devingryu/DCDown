@@ -29,7 +29,6 @@ class ExternalStorageRepositoryImpl @Inject constructor(
     private fun saveImage(baseDir: String, fileName: String, data: File): String? {
         val contentResolver = context.contentResolver
         val encoded = URLEncoder.encode(fileName, "UTF-8").replace("+", "%20")
-        println(encoded)
         val mime = MimeTypeMap.getFileExtensionFromUrl(encoded)?.let {
             MimeTypeMap.getSingleton().getMimeTypeFromExtension(it)
         } ?: throw Exception("$fileName: 확장자가 올바르지 않습니다.")
