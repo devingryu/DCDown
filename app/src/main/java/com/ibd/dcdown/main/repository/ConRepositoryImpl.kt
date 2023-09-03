@@ -2,9 +2,11 @@ package com.ibd.dcdown.repository
 
 import com.ibd.dcdown.dto.ConData
 import com.ibd.dcdown.dto.ConPack
+import com.ibd.dcdown.dto.PostConPackDetailResponse
 import com.ibd.dcdown.tools.ServiceClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
 import okhttp3.FormBody
 import okhttp3.Request
 import okhttp3.RequestBody
@@ -40,37 +42,32 @@ class ConRepositoryImpl @Inject constructor() : ConRepository {
     }
 
     override suspend fun requestConPack(id: String): ConPack {
-//        ServiceClient.createService(DCConService::class.java).postConPackDetail(
-//            hashMapOf("package_idx" to id)
-//        ).enqueue(object : Callback<PostConPackDetailResponse>)
-
-        val conArray: ArrayList<ConData> = arrayListOf()
         val res: String =
             withContext(Dispatchers.Default) {
-                val request = Request.Builder().url("https://dccon.dcinside.com/index/package_detail")
-                    .header("x-requested-with", "XMLHttpRequest")
-                    .post(FormBody.Builder().add("package_idx", id).build())
-                    .build()
+                val request =
+                    Request.Builder().url("https://dccon.dcinside.com/index/package_detail")
+                        .header("x-requested-with", "XMLHttpRequest")
+                        .post(FormBody.Builder().add("package_idx", id).build())
+                        .build()
                 ServiceClient.okHttp.newCall(request).execute().body!!.string()
             }
-        val response = JSONObject(res)
 
-        val json = response.getJSONArray("detail")
-        val name = response.getJSONObject("info").getString("title")
-        val author = response.getJSONObject("info").getString("seller_name")
-        val img = response.getJSONObject("info").getString("path")
-        for (i in 0 until json.length()) {
-            val v = json.getJSONObject(i)
-            conArray.add(
-                ConData(
-                    v.getString("idx"),
-                    v.getString("title"),
-                    v.getString("ext"),
-                    v.getString("path"),
-                    false
-                )
+        try {
+            val json = Json.decodeFromString<PostConPackDetailResponse>(res)
+            val cons = buildList {
+                json.detail?.forEach {
+                    add(ConData(it!!.idx, it.title, it.ext, it.path))
+                }
+            }
+            return ConPack(
+                json.info!!.title!!,
+                json.info.sellerName!!,
+                json.info.packageIdx!!,
+                json.info.path!!,
+                cons
             )
+        } catch (_: Exception) {
+            throw Exception("서버로부터 잘못된 응답을 받았습니다.")
         }
-        return ConPack(name, author, id, img, conArray)
     }
 }

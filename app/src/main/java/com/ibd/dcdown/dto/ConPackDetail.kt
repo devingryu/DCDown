@@ -7,15 +7,15 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ConPackDetail(
     @SerialName("ext")
-    val ext: String?,
+    val ext: String,
     @SerialName("idx")
-    val idx: String?,
+    val idx: String,
     @SerialName("package_idx")
-    val packageIdx: String?,
+    val packageIdx: String,
     @SerialName("path")
-    val path: String?,
+    val path: String,
     @SerialName("sort")
-    val sort: String?,
+    val sort: String,
     @SerialName("title")
-    val title: String?
+    val title: String
 )
