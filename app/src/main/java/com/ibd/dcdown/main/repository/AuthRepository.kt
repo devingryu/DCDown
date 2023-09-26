@@ -1,5 +1,7 @@
 package com.ibd.dcdown.main.repository
 
-interface AuthRepository {
+import com.ibd.dcdown.proto.Checkin
 
+interface AuthRepository {
+    suspend fun requestCheckin(): Checkin.AndroidCheckinResponse
 }

@@ -56,4 +56,6 @@ object Extensions {
             )
         }
     }
+    fun String.randomLength(length: Int) =
+        (1..length).map { random() }.joinToString("")
 }

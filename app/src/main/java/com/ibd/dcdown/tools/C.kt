@@ -13,4 +13,10 @@ object C {
 
     const val IMG_BASE_URL = "https://dcimg5.dcinside.com/dccon.php?no="
     const val DEFAULT_REFERER = "https://dccon.dcinside.com/"
+    object PlayService {
+        private const val ANDROID_CLIENT = "https://android.clients.google.com"
+        const val CHECKIN = "$ANDROID_CLIENT/checkin"
+        const val REGISTER3 = "$ANDROID_CLIENT/c2dm/register3"
+    }
+
 }

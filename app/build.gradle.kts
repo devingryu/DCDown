@@ -4,7 +4,10 @@ plugins {
     kotlin("kapt")
     id("com.google.dagger.hilt.android")
     kotlin("plugin.serialization") version "1.8.10"
+    id("com.google.protobuf") version "0.9.3"
 }
+
+val protocVersion = "3.24.3"
 
 android {
     namespace = "com.ibd.dcdown"
@@ -95,4 +98,28 @@ dependencies {
     implementation("com.github.bumptech.glide:compose:1.0.0-alpha.5")
     implementation("com.google.accompanist:accompanist-systemuicontroller:0.30.1")
     implementation("com.google.accompanist:accompanist-permissions:0.30.1")
+
+    implementation("com.google.protobuf:protobuf-kotlin-lite:$protocVersion")
+}
+
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:$protocVersion"
+    }
+
+    // Generates the java Protobuf-lite code for the Protobufs in this project. See
+    // https://github.com/google/protobuf-gradle-plugin#customizing-protobuf-compilation
+    // for more information.
+    generateProtoTasks {
+        all().forEach { task ->
+            task.builtins {
+                create("java") {
+                    option("lite")
+                }
+                create("kotlin") {
+                    option("lite")
+                }
+            }
+        }
+    }
 }
