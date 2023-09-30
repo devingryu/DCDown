@@ -1,6 +1,7 @@
 package com.ibd.dcdown.main.repository
 
 import com.ibd.dcdown.dto.FirebaseInstallationsRequest
+import com.ibd.dcdown.dto.FirebaseInstallationsResponse
 import com.ibd.dcdown.proto.Checkin.AndroidCheckinResponse
 import com.ibd.dcdown.proto.androidBuildProto
 import com.ibd.dcdown.proto.androidCheckinProto
@@ -101,7 +102,7 @@ class AuthRepositoryImpl : AuthRepository {
         return ServiceClient.okHttp.newCall(request).await()
     }
 
-    suspend fun fetchFcmToken(argFid: String? = null, argRefreshToken: String? = null): String {
+    suspend fun fetchFcmToken(argFid: String? = null, argRefreshToken: String? = null): FirebaseInstallationsResponse {
         val request = Request.Builder().url(C.ApiUrl.Firebase.INSTALLATIONS)
             .header("X-Android-Package", C.Installations.X_ANDROID_PACKAGE)
             .header("X-Android-Cert", C.Installations.X_ANDROID_CERT)
@@ -118,7 +119,7 @@ class AuthRepositoryImpl : AuthRepository {
                 ).toRequestBody(JSON)
             ).build()
         val response = ServiceClient.okHttp.newCall(request).await()
-        return response.body!!.toString()
+        return Json.decodeFromString(response.body!!.string())
     }
 
     companion object {
