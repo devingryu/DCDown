@@ -3,6 +3,8 @@ package com.ibd.dcdown.tools
 import com.ibd.dcdown.BuildConfig
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.OkHttpClient
@@ -22,6 +24,8 @@ object ServiceClient {
         }
     }
     val okHttp get() = okHttpBuilder.build()
+    @OptIn(ExperimentalSerializationApi::class)
+    val json by lazy { Json { ignoreUnknownKeys = true; explicitNulls = false } }
 
     suspend fun Call.await(): Response  = suspendCancellableCoroutine { continuation ->
         enqueue(object: Callback {

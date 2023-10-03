@@ -53,7 +53,7 @@ class ConRepositoryImpl @Inject constructor() : ConRepository {
             }
 
         try {
-            val json = Json.decodeFromString<PostConPackDetailResponse>(res)
+            val json = ServiceClient.json.decodeFromString<PostConPackDetailResponse>(res)
             val cons = buildList {
                 json.detail?.forEach {
                     add(ConData(it!!.idx, it.title, it.ext, it.path))

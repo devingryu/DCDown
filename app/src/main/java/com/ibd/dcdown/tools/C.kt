@@ -1,6 +1,7 @@
 package com.ibd.dcdown.tools
 
 import androidx.annotation.IntDef
+import okhttp3.MediaType.Companion.toMediaType
 
 object C {
     @Target(AnnotationTarget.VALUE_PARAMETER, AnnotationTarget.TYPE)
@@ -27,6 +28,11 @@ object C {
         object Firebase {
             const val INSTALLATIONS = "https://firebaseinstallations.googleapis.com/v1/projects/dcinside-b3f40/installations"
         }
+        object Auth {
+            const val AUTH_API = "https://msign.dcinside.com/"
+            const val LOGIN = AUTH_API + "api/login"
+            const val APP_ID = AUTH_API + "auth/mobile_app_verification"
+        }
     }
 
     object Register3 {
@@ -52,4 +58,5 @@ object C {
         const val X_GOOG_API_KEY = "AIzaSyDcbVof_4Bi2GwJ1H8NjSwSTaMPPZeCE38"
     }
 
+    val JSON = "application/json".toMediaType()
 }
