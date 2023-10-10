@@ -85,6 +85,7 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.47")
     implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
     kapt("com.google.dagger:hilt-compiler:2.47")
+    implementation("com.jakewharton.timber:timber:5.0.1")
 
     implementation("net.lingala.zip4j:zip4j:2.7.0")
     implementation("org.jsoup:jsoup:1.16.1")

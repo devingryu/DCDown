@@ -14,12 +14,14 @@ object C {
 
     const val IMG_BASE_URL = "https://dcimg5.dcinside.com/dccon.php?no="
     const val DEFAULT_REFERER = "https://dccon.dcinside.com/"
-    const val DC_APP_SIGNATURE = "ReOo4u96nnv8Njd7707KpYiIVYQ3FlcKHDJE046Pg6s="
+    const val DC_APP_SIGNATURE = "5rJxRKJ2YLHgBgj6RdMZBl2X0KcftUuMoXVug0bsKd0="
     const val DC_APP_PACKAGE = "com.dcinside.app.android"
-    const val DC_APP_VERSION_CODE = "100034"
-    const val DC_APP_VERSION_NAME = "4.7.8"
+    const val DC_APP_VERSION_CODE = "100046"
+    const val DC_APP_VERSION_NAME = "4.7.14"
     const val USER_AGENT = "dcinside.app"
     object ApiUrl {
+        const val MAIN_API = "http://json2.dcinside.com/"
+        const val APP_API = "https://app.dcinside.com/api/"
         object PlayService {
             private const val ANDROID_CLIENT = "https://android.clients.google.com"
             const val CHECKIN = "$ANDROID_CLIENT/checkin"
@@ -32,6 +34,10 @@ object C {
             const val AUTH_API = "https://msign.dcinside.com/"
             const val LOGIN = AUTH_API + "api/login"
             const val APP_ID = AUTH_API + "auth/mobile_app_verification"
+            const val APP_CHECK = MAIN_API + "json0/app_check_A_rina_one.php"
+        }
+        object DCCon {
+            const val DCCON = APP_API + "dccon.php"
         }
     }
 
