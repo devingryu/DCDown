@@ -1,12 +1,8 @@
 package com.ibd.dcdown.main.composable
 
-import android.app.Activity
 import android.content.Intent
-import android.os.Environment
 import android.widget.Toast
 import androidx.annotation.StringRes
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -24,7 +20,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.NewReleases
-import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingCart
@@ -32,6 +27,7 @@ import androidx.compose.material.icons.filled.Whatshot
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.ShoppingCart
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -50,14 +46,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -71,24 +64,23 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.ibd.dcdown.R
+import com.ibd.dcdown.dto.User
+import com.ibd.dcdown.login.view.LoginActivity
 import com.ibd.dcdown.main.view.DetailActivity
 import com.ibd.dcdown.main.view.SearchActivity
 import com.ibd.dcdown.main.viewmodel.HomeViewModel
-import kotlinx.coroutines.launch
+import com.ibd.dcdown.repository.ConRepositoryImpl
+import com.ibd.dcdown.tools.AuthUtil
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 fun MainPage() {
+    val context = LocalContext.current
     val systemUiController = rememberSystemUiController()
     val useDarkIcons = !isSystemInDarkTheme()
     val statusBarColor = MaterialTheme.colorScheme.surface
     val navBarColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
-    DisposableEffect(systemUiController, useDarkIcons) {
-        systemUiController.setStatusBarColor(statusBarColor, useDarkIcons)
-        systemUiController.setNavigationBarColor(navBarColor, useDarkIcons)
-        onDispose { }
-    }
-
-    val context = LocalContext.current
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
@@ -97,6 +89,18 @@ fun MainPage() {
         MainScreen.History,
         MainScreen.More
     )
+
+    DisposableEffect(systemUiController, useDarkIcons) {
+        systemUiController.setStatusBarColor(statusBarColor, useDarkIcons)
+        systemUiController.setNavigationBarColor(navBarColor, useDarkIcons)
+        onDispose { }
+    }
+//    LaunchedEffect(Unit) {
+//        withContext(Dispatchers.IO) {
+//            val myCons = ConRepositoryImpl().requestMyCons(user)
+//        }
+//    }
+
     Scaffold(
         bottomBar = {
             NavigationBar {
@@ -159,7 +163,6 @@ private fun MainHomeScreen(
     }
     val sheetState = rememberModalBottomSheetState()
     var isSheetVisible by rememberSaveable { mutableStateOf(false) }
-    val scope = rememberCoroutineScope()
 
     val event by vm.eventChannel.collectAsState(initial = null)
     val context = LocalContext.current
@@ -243,8 +246,11 @@ private fun MainHomeScreen(
 private fun MainHistoryScreen(
     vm: HomeViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
     Column(verticalArrangement = Arrangement.Center) {
-        Text("History")
+        Button(onClick = { context.startActivity(Intent(context, LoginActivity::class.java)) }) {
+            Text("asdfasfd")
+        }
     }
 }
 

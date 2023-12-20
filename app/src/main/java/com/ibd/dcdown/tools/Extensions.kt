@@ -1,5 +1,8 @@
 package com.ibd.dcdown.tools
 
+import android.content.Context
+import android.content.ContextWrapper
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -58,4 +61,10 @@ object Extensions {
     }
     fun String.randomLength(length: Int) =
         (1..length).map { random() }.joinToString("")
+
+    val Context.activity : ComponentActivity? get() = when (this) {
+        is ComponentActivity -> this
+        is ContextWrapper -> baseContext.activity
+        else -> null
+    }
 }

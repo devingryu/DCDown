@@ -24,8 +24,6 @@ data class ConPackInfo(
     val `open`: String?,
     @SerialName("package_idx")
     val packageIdx: String?,
-    @SerialName("path")
-    val path: String?,
     @SerialName("period")
     val period: String?,
     @SerialName("price")
@@ -40,12 +38,8 @@ data class ConPackInfo(
     val residual: Boolean?,
     @SerialName("sale_count")
     val saleCount: String?,
-    @SerialName("seller_id")
-    val sellerId: String?,
     @SerialName("seller_name")
     val sellerName: String?,
-    @SerialName("seller_no")
-    val sellerNo: String?,
     @SerialName("seller_type")
     val sellerType: String?,
     @SerialName("state")

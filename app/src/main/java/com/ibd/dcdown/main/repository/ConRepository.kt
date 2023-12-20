@@ -1,6 +1,8 @@
 package com.ibd.dcdown.repository
 
 import com.ibd.dcdown.dto.ConPack
+import com.ibd.dcdown.dto.MyConResponse
+import com.ibd.dcdown.dto.User
 
 interface ConRepository {
     /**
@@ -14,4 +16,9 @@ interface ConRepository {
      * 입력된 디시콘 팩 id의 정보를 가져옵니다.
      */
     suspend fun requestConPack(id: String): ConPack
+
+    /**
+     * 로그인된 사용자의 구매 디시콘을 가져옵니다.
+     */
+    suspend fun requestMyCons(user: User): MyConResponse
 }

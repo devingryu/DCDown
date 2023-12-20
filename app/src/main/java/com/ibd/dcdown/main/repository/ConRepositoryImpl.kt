@@ -2,18 +2,21 @@ package com.ibd.dcdown.repository
 
 import com.ibd.dcdown.dto.ConData
 import com.ibd.dcdown.dto.ConPack
+import com.ibd.dcdown.dto.MyConResponse
 import com.ibd.dcdown.dto.PostConPackDetailResponse
+import com.ibd.dcdown.dto.User
+import com.ibd.dcdown.tools.AuthUtil
+import com.ibd.dcdown.tools.C
 import com.ibd.dcdown.tools.ServiceClient
+import com.ibd.dcdown.tools.ServiceClient.await
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
 import okhttp3.FormBody
 import okhttp3.Request
-import okhttp3.RequestBody
-import org.json.JSONObject
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.select.Elements
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -63,11 +66,33 @@ class ConRepositoryImpl @Inject constructor() : ConRepository {
                 json.info!!.title!!,
                 json.info.sellerName!!,
                 json.info.packageIdx!!,
-                json.info.path!!,
+                json.info.listImgPath!!,
                 cons
             )
-        } catch (_: Exception) {
-            throw Exception("서버로부터 잘못된 응답을 받았습니다.")
+        } catch (e: Exception) {
+            Timber.e(e)
+            throw Exception("오류가 발생했습니다.")
+        }
+    }
+
+    override suspend fun requestMyCons(user: User): MyConResponse {
+        try {
+            val request = Request.Builder().url(C.ApiUrl.DCCon.DCCON)
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .header("User-Agent", "dcinside.app")
+                .header("Referer", "http://www.dcinside.com")
+                .post(
+                    FormBody.Builder()
+                        .addEncoded("user_id", user.session!!.userId!!)
+                        .addEncoded("app_id", AuthUtil.getAppId())
+                        .addEncoded("type", "setting")
+                        .build()
+                ).build()
+            val raw = ServiceClient.okHttp.newCall(request).await().body!!.string()
+            return ServiceClient.json.decodeFromString(raw)
+        } catch (e: Exception) {
+            Timber.e(e)
+            throw Exception("오류가 발생했습니다. 재로그인이 필요할 수도 있습니다...")
         }
     }
 }

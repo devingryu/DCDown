@@ -1,5 +1,7 @@
 package com.ibd.dcdown.hilt
 
+import com.ibd.dcdown.login.repository.LoginRepository
+import com.ibd.dcdown.login.repository.LoginRepositoryImpl
 import com.ibd.dcdown.main.repository.ExternalStorageRepository
 import com.ibd.dcdown.main.repository.ExternalStorageRepositoryImpl
 import com.ibd.dcdown.repository.ConRepository
@@ -22,4 +24,7 @@ interface RepositoryModule {
 
     @Binds
     fun provideExternalStorageRepositoryImpl(repositoryImpl: ExternalStorageRepositoryImpl): ExternalStorageRepository
+
+    @Binds
+    fun provideLoginRepositoryImpl(repositoryImpl: LoginRepositoryImpl): LoginRepository
 }

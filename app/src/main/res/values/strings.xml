@@ -15,4 +15,9 @@
     <string name="to_back">이전으로</string>
     <string name="save">저장</string>
     <string name="deselect">선택 해제</string>
+    <string name="login">로그인</string>
+    <string name="dc_login">디시 로그인</string>
+    <string name="id">식별 코드</string>
+    <string name="password">비밀번호</string>
+    <string name="login_welcome_message">%1$s(%2$s) 로그인됨</string>
 </resources>

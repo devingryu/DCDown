@@ -26,6 +26,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".login.view.LoginActivity" />
         <activity android:name=".main.view.DetailActivity" />
         <activity android:name=".main.view.SearchActivity" />
     </application>

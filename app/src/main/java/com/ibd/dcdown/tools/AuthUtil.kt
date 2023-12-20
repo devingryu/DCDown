@@ -5,12 +5,16 @@
 package com.ibd.dcdown.tools
 
 import android.content.Context
+import android.widget.Toast
+import androidx.core.content.edit
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.ibd.dcdown.DCDownApplication
+import com.ibd.dcdown.R
 import com.ibd.dcdown.dto.AppCheck
 import com.ibd.dcdown.dto.AppIdResponse
 import com.ibd.dcdown.dto.AuthState
+import com.ibd.dcdown.dto.DCException
 import com.ibd.dcdown.dto.FirebaseInstallationsRequest
 import com.ibd.dcdown.dto.FirebaseInstallationsResponse
 import com.ibd.dcdown.dto.LoginResponse
@@ -43,32 +47,80 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
+import kotlin.jvm.Throws
 
 object AuthUtil {
     private val storeKey = stringPreferencesKey("auth")
     private val seoulTimeZone = TimeZone.getTimeZone("Asia/Seoul")
 
-    var appId: String? = null
-        private set
     private var fcmToken: String? = null
     private var fid: String? = null
     private var refreshToken: String? = null
     private var time: String? = null
     private var lastRefreshTime: Calendar? = null
     private var appInfo: AuthState.AppInfo? = null
+
+    private var loginUser: User? = null
     suspend fun init(context: Context) {
         val currentState = context.dataStore.data.first()
-        val data = runCatching {
+        runCatching {
             ServiceClient.json.decodeFromString<AuthState>(currentState[storeKey]!!)
-        }.getOrNull() ?: return
-        fcmToken = data.fcmToken
-        fid = data.fid
-        refreshToken = data.refreshToken
-        time = data.time
-        lastRefreshTime = if (data.lastRefreshTime != null) {
-            Calendar.getInstance().apply { timeInMillis = data.lastRefreshTime }
-        } else null
-        appInfo = data.appInfo
+        }.getOrNull()?.let { data ->
+            fcmToken = data.fcmToken
+            fid = data.fid
+            refreshToken = data.refreshToken
+            time = data.time
+            lastRefreshTime = if (data.lastRefreshTime != null) {
+                Calendar.getInstance().apply { timeInMillis = data.lastRefreshTime }
+            } else null
+            appInfo = data.appInfo
+        }
+
+        runCatching {
+            val raw = context.secureStore.getString("login", null)!!
+            ServiceClient.json.decodeFromString<List<User>>(raw)
+        }.getOrNull()?.let { data ->
+            loginUser = data.getOrNull(0)?.also {
+                Toast.makeText(
+                    context,
+                    context.getString(
+                        R.string.login_welcome_message,
+                        it.session?.nickname,
+                        it.id
+                    ),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+
+        }
+    }
+
+    /**
+     * login and set current session account.
+     * @throws IllegalArgumentException if login fails
+     */
+    suspend fun setAccount(context: Context, user: User): User {
+        val loggedIn = try {
+            requestLogin(user)
+        } catch (de: DCException) {
+            Timber.e(de)
+            throw de
+        } catch (e: Exception) {
+            Timber.e(e)
+            throw Exception("로그인에 실패했습니다.")
+        }
+        loginUser = loggedIn
+
+        try {
+            context.secureStore.edit {
+                val raw = ServiceClient.json.encodeToString(listOf(loggedIn))
+                putString("login", raw)
+            }
+        } catch (e: Exception) {
+            Timber.e(e)
+            // TODO: firebase crashlytics
+        }
+        return loggedIn
     }
 
     private suspend fun saveState() {
@@ -124,24 +176,12 @@ object AuthUtil {
         val raw = ServiceClient.okHttp.newCall(request).await()
         val response = ServiceClient.json.decodeFromString<LoginResponse>(raw.body!!.string())
 
+        if (response.result != true)
+            throw Exception("로그인 실패: ${response.cause}")
+
         return user.copy(session = Session.of(response))
     }
 
-    suspend fun requestMyCons(user: User): MyConResponse {
-        val request = Request.Builder().url(C.ApiUrl.DCCon.DCCON)
-            .header("Content-Type", "application/x-www-form-urlencoded")
-            .header("User-Agent", "dcinside.app")
-            .header("Referer", "http://www.dcinside.com")
-            .post(
-                FormBody.Builder()
-                    .addEncoded("user_id", user.session!!.userId!!)
-                    .addEncoded("app_id", fetchAppId())
-                    .addEncoded("type", "setting")
-                    .build()
-            ).build()
-        val raw = ServiceClient.okHttp.newCall(request).await().body!!.string()
-        return ServiceClient.json.decodeFromString<MyConResponse>(raw)
-    }
 
     suspend fun requestCheckin(): Checkin.AndroidCheckinResponse {
         val requestProto = androidCheckinRequest {
@@ -289,8 +329,11 @@ object AuthUtil {
 
     private suspend fun fetchAppId(hashedAppKey: String? = null): String {
         val hak = hashedAppKey ?: generateHashedAppKey()
-        val fcmToken = requestFcmToken(fid, refreshToken)
-        this.fcmToken = fcmToken
+        val fcmToken = this.fcmToken ?: run {
+            val token = requestFcmToken(fid, refreshToken)
+            this.fcmToken = token
+            token
+        }
 
         val request = Request.Builder().url(C.ApiUrl.Auth.APP_ID)
             .header("Content-Type", "application/x-www-form-urlencoded")
@@ -309,10 +352,6 @@ object AuthUtil {
 
         val response = ServiceClient.okHttp.newCall(request).await().body!!.string()
         val appId = ServiceClient.json.decodeFromString<AppIdResponse>(response).appId!!
-
-        this.appId = appId
-        saveState()
-
         return appId
     }
 
