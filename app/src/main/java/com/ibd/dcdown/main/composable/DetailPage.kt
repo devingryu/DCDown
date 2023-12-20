@@ -48,17 +48,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
-import com.bumptech.glide.integration.compose.GlideImage
-import com.bumptech.glide.integration.compose.Placeholder
-import com.bumptech.glide.integration.compose.placeholder
-import com.bumptech.glide.load.model.GlideUrl
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.ibd.dcdown.R
 import com.ibd.dcdown.main.viewmodel.DetailViewModel
 import com.ibd.dcdown.tools.C
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalGlideComposeApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailPage(id: String, vm: DetailViewModel = hiltViewModel()) {
     val systemUiController = rememberSystemUiController()
@@ -131,12 +128,16 @@ fun DetailPage(id: String, vm: DetailViewModel = hiltViewModel()) {
                         .aspectRatio(1f)
                         .toggleable(it.selected) { _ -> vm.toggle(it.id) }
                 ) {
-                    GlideImage(
-                        model = GlideUrl("${C.IMG_BASE_URL}${it.uri}") { mapOf("Referer" to C.DEFAULT_REFERER) },
-                        loading = placeholder(R.drawable.baseline_downloading_24),
-                        modifier = Modifier.fillMaxSize(),
+                    AsyncImage(
+                        model = ImageRequest.Builder(context)
+                            .data("${C.IMG_BASE_URL}${it.uri}")
+                            .addHeader("Referer", C.DEFAULT_REFERER)
+                            .crossfade(100)
+                            .build(),
                         contentDescription = it.name,
-                        contentScale = ContentScale.Crop
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop,
+                        placeholder = painterResource(R.drawable.baseline_downloading_24)
                     )
                     CircleCheckBox(
                         modifier = Modifier.align(Alignment.BottomEnd),

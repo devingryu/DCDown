@@ -33,16 +33,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
-import com.bumptech.glide.integration.compose.GlideImage
-import com.bumptech.glide.load.model.GlideUrl
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.ibd.dcdown.R
 import com.ibd.dcdown.dto.ConPack
 import com.ibd.dcdown.tools.C
@@ -108,13 +107,17 @@ fun ConPackList(
     }
 }
 
-@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun ConPackListItem(data: ConPack, modifier: Modifier = Modifier, onMoreClick: () -> Unit = {}) {
+    val context = LocalContext.current
     Box(modifier = modifier.background(MaterialTheme.colorScheme.surface)) {
         Row(Modifier.padding(12.dp, 8.dp)) {
-            GlideImage(
-                model = GlideUrl(data.img) { mapOf("Referer" to C.DEFAULT_REFERER) },
+            AsyncImage(
+                model = ImageRequest.Builder(context)
+                    .data(data.img)
+                    .addHeader("Referer", C.DEFAULT_REFERER)
+                    .crossfade(100)
+                    .build(),
                 contentDescription = data.name,
                 modifier = Modifier
                     .size(64.dp)
