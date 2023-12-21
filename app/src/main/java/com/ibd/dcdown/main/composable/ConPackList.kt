@@ -148,13 +148,6 @@ fun ConPackListItem(data: ConPack, modifier: Modifier = Modifier, onMoreClick: (
                 )
             }
         }
-//        Box(
-//            Modifier
-//                .background(MaterialTheme.colorScheme.surfaceVariant)
-//                .height(1.dp)
-//                .fillMaxWidth(0.9f)
-//                .align(Alignment.BottomCenter)
-//        )
         Icon(
             Icons.Filled.MoreVert,
             null,

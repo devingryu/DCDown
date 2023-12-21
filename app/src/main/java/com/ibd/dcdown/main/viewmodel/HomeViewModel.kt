@@ -61,7 +61,7 @@ class HomeViewModel @Inject constructor(
                 if (isRefresh) isRefreshing = false
                 else isLoadingMore = false
             }.onFailure {
-                sendEvent(E.Toast(it.localizedMessage))
+                sendEvent(E.Toast(it.message))
             }.onSuccess {
                 if (it != null) {
                     if (it.isEmpty()) hasMore = false

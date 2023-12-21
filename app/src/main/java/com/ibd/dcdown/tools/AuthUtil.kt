@@ -31,6 +31,8 @@ import com.ibd.dcdown.tools.Util.sha256
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -60,7 +62,7 @@ object AuthUtil {
     private var lastRefreshTime: Calendar? = null
     private var appInfo: AuthState.AppInfo? = null
 
-    private var loginUser: User? = null
+    val loginUser = MutableStateFlow<User?>(null)
     suspend fun init(context: Context) {
         val currentState = context.dataStore.data.first()
         runCatching {
@@ -80,7 +82,7 @@ object AuthUtil {
             val raw = context.secureStore.getString("login", null)!!
             ServiceClient.json.decodeFromString<List<User>>(raw)
         }.getOrNull()?.let { data ->
-            loginUser = data.getOrNull(0)?.also {
+            loginUser.value = data.getOrNull(0)?.also {
                 Toast.makeText(
                     context,
                     context.getString(
@@ -109,7 +111,7 @@ object AuthUtil {
             Timber.e(e)
             throw Exception("로그인에 실패했습니다.")
         }
-        loginUser = loggedIn
+        loginUser.value = loggedIn
 
         try {
             context.secureStore.edit {

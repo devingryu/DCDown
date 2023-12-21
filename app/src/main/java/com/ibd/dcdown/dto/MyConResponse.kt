@@ -9,14 +9,4 @@ data class MyConResponse (
     val useList: List<MyCon>?,
     @SerialName("unuse_list")
     val unuseList: List<MyCon>?
-) {
-    @Serializable
-    data class MyCon(
-        @SerialName("img")
-        val img: String?,
-        @SerialName("package_idx")
-        val packageIdx: String?,
-        @SerialName("title")
-        val title: String?,
-    )
-}
+)

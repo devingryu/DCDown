@@ -3,6 +3,10 @@ package com.ibd.dcdown.main.composable
 import android.content.Intent
 import android.widget.Toast
 import androidx.annotation.StringRes
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -56,6 +60,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -64,15 +69,13 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.ibd.dcdown.R
-import com.ibd.dcdown.dto.User
+import com.ibd.dcdown.dto.ConPack
 import com.ibd.dcdown.login.view.LoginActivity
 import com.ibd.dcdown.main.view.DetailActivity
 import com.ibd.dcdown.main.view.SearchActivity
 import com.ibd.dcdown.main.viewmodel.HomeViewModel
-import com.ibd.dcdown.repository.ConRepositoryImpl
+import com.ibd.dcdown.main.viewmodel.MyConViewModel
 import com.ibd.dcdown.tools.AuthUtil
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 @Composable
 fun MainPage() {
@@ -95,11 +98,6 @@ fun MainPage() {
         systemUiController.setNavigationBarColor(navBarColor, useDarkIcons)
         onDispose { }
     }
-//    LaunchedEffect(Unit) {
-//        withContext(Dispatchers.IO) {
-//            val myCons = ConRepositoryImpl().requestMyCons(user)
-//        }
-//    }
 
     Scaffold(
         bottomBar = {
@@ -146,7 +144,7 @@ fun MainPage() {
             startDestination = MainScreen.Home.route,
         ) {
             composable("home") { MainHomeScreen() }
-            composable("history") { MainHistoryScreen() }
+            composable("history") { MainMyConScreen() }
             composable("more") { MainMoreScreen() }
         }
     }
@@ -162,7 +160,7 @@ private fun MainHomeScreen(
             vm.requestList(true)
     }
     val sheetState = rememberModalBottomSheetState()
-    var isSheetVisible by rememberSaveable { mutableStateOf(false) }
+    var sheetData: ConPack? by rememberSaveable { mutableStateOf(null) }
 
     val event by vm.eventChannel.collectAsState(initial = null)
     val context = LocalContext.current
@@ -183,7 +181,7 @@ private fun MainHomeScreen(
         if (vm.isRefreshing)
             CircularProgressIndicator(
                 Modifier
-                    .size(24.dp)
+                    .size(48.dp)
                     .align(Alignment.Center)
             )
         Column(Modifier.fillMaxSize()) {
@@ -228,30 +226,108 @@ private fun MainHomeScreen(
                         context.startActivity(this)
                     }
                 }, onClickItemMore = {
-                    isSheetVisible = true
+                    sheetData = it
                 }, onLoadMore = {
                     vm.requestList(false)
                 }
             )
         }
 
-        if (isSheetVisible)
-            ModalBottomSheet(sheetState = sheetState, onDismissRequest = { isSheetVisible = false }) {
-                Text("MODAL", modifier = Modifier.padding(16.dp))
-            }
+        sheetData?.let {
+            ConMenuBottomSheet(
+                sheetState = sheetState,
+                data = it,
+                onClick = { type, data -> },
+                onDismiss = { sheetData = null })
+        }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun MainHistoryScreen(
-    vm: HomeViewModel = hiltViewModel()
+private fun MainMyConScreen(
+    vm: MyConViewModel = hiltViewModel()
 ) {
+    val user by AuthUtil.loginUser.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    Column(verticalArrangement = Arrangement.Center) {
-        Button(onClick = { context.startActivity(Intent(context, LoginActivity::class.java)) }) {
-            Text("asdfasfd")
+    val sheetState = rememberModalBottomSheetState()
+    var sheetData: ConPack? by rememberSaveable { mutableStateOf(null) }
+
+    LaunchedEffect(user) {
+        if (vm.list.isEmpty())
+            user?.let { user ->
+                vm.requestList(user)
+            }
+    }
+
+    if (user != null) {
+        Box(Modifier.fillMaxSize()) {
+            if (vm.isRefreshing)
+                CircularProgressIndicator(
+                    Modifier
+                        .size(48.dp)
+                        .align(Alignment.Center)
+                )
+            else
+                ConPackListCompact(
+                    modifier = Modifier.clip(RoundedCornerShape(12.dp)),
+                    data = vm.list,
+                    header = {
+                        item {
+                            Text(
+                                stringResource(R.string.purchase_list),
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp, 64.dp, 0.dp, 8.dp),
+                                style = MaterialTheme.typography.headlineLarge
+                            )
+                        }
+                    },
+                    onClickItem = {
+                        Intent(context, DetailActivity::class.java).apply {
+                            putExtra("id", it.packageIdx)
+                            context.startActivity(this)
+                        }
+                    },
+                    onClickItemMore = {
+                        if (it.packageIdx != null)
+                            sheetData = ConPack(
+                                it.title ?: "",
+                                "",
+                                it.packageIdx,
+                                it.img,
+                                listOf()
+                            )
+                    },
+                )
+            sheetData?.let {
+                ConMenuBottomSheet(
+                    sheetState = sheetState,
+                    data = it,
+                    onClick = { type, data -> },
+                    onDismiss = { sheetData = null })
+            }
+        }
+
+    } else {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Button(onClick = {
+                context.startActivity(
+                    Intent(
+                        context,
+                        LoginActivity::class.java
+                    )
+                )
+            }) {
+                Text(stringResource(R.string.login))
+            }
         }
     }
+
 }
 
 @Composable
@@ -287,5 +363,5 @@ sealed class Filter(
     val label: String
 ) {
     object Hot : Filter(0, Icons.Filled.Whatshot, "인기")
-    object New : Filter(1, Icons.Filled.NewReleases,"신규")
+    object New : Filter(1, Icons.Filled.NewReleases, "신규")
 }

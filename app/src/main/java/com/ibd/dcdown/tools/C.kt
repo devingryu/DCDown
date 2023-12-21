@@ -12,6 +12,19 @@ object C {
     const val FILTER_HOT = 0
     const val FILTER_NEW = 1
 
+    @Target(AnnotationTarget.VALUE_PARAMETER, AnnotationTarget.TYPE)
+    @Retention(AnnotationRetention.SOURCE)
+    @IntDef(
+        CON_PACK_CLICK_DETAIL,
+        CON_PACK_CLICK_DOWNLOAD_DEFAULT,
+        CON_PACK_CLICK_DOWNLOAD_COMPRESSED
+    )
+    annotation class ConPackMenuClickType
+
+    const val CON_PACK_CLICK_DETAIL = 0
+    const val CON_PACK_CLICK_DOWNLOAD_DEFAULT = 1
+    const val CON_PACK_CLICK_DOWNLOAD_COMPRESSED = 2
+
     const val IMG_BASE_URL = "https://dcimg5.dcinside.com/dccon.php?no="
     const val DEFAULT_REFERER = "https://dccon.dcinside.com/"
     const val DC_APP_SIGNATURE = "5rJxRKJ2YLHgBgj6RdMZBl2X0KcftUuMoXVug0bsKd0="
