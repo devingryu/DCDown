@@ -89,7 +89,7 @@ fun LoginPage(vm: LoginViewModel = hiltViewModel()) {
         }
     }
 
-    Scaffold() { padding ->
+    Scaffold { padding ->
         Column(
             modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically)

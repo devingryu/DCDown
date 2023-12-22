@@ -32,6 +32,7 @@ import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -41,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -107,7 +109,7 @@ fun DetailPage(id: String, vm: DetailViewModel = hiltViewModel()) {
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { vm.requestSaveSelected(true) }) {
+            FloatingActionButton(onClick = { vm.requestSaveSelected(false) }) {
                 Icon(Icons.Filled.Save, stringResource(R.string.save))
             }
         }
@@ -137,7 +139,7 @@ fun DetailPage(id: String, vm: DetailViewModel = hiltViewModel()) {
                         contentDescription = it.name,
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop,
-                        placeholder = painterResource(R.drawable.baseline_downloading_24)
+                        placeholder = ColorPainter(MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp))
                     )
                     CircleCheckBox(
                         modifier = Modifier.align(Alignment.BottomEnd),

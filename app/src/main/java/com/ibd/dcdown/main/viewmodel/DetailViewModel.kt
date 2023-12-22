@@ -64,7 +64,6 @@ class DetailViewModel @Inject constructor(
                 list.clear()
                 list.addAll(it.data)
             }.onFailure {
-
                 sendEvent(E.Toast(it.message))
             }
 

@@ -151,6 +151,8 @@ fun SearchPage(vm: SearchViewModel = hiltViewModel()) {
                             stickyHeader {
                                 Row(
                                     Modifier
+                                        .fillMaxWidth()
+                                        .background(MaterialTheme.colorScheme.surface)
                                         .padding(start = 12.dp, bottom = 8.dp, top = 8.dp)
                                 ) {
                                     filter.forEach {
