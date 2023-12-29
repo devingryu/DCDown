@@ -3,6 +3,7 @@ package com.ibd.dcdown.main.repository
 import android.content.ContentValues
 import android.content.Context
 import android.media.MediaScannerConnection
+import android.os.Build
 import android.os.Environment
 import android.os.SystemClock
 import android.provider.MediaStore
@@ -115,6 +116,7 @@ class ExternalStorageRepositoryImpl @Inject constructor(
                 if (tempDir.isDirectory && tempDir.exists())
                     tempDir.deleteRecursively()
                 parentDir.mkdirs()
+                println(parentDir.path)
 
                 for (file in files) {
                     try {
@@ -141,7 +143,7 @@ class ExternalStorageRepositoryImpl @Inject constructor(
                 send(DownloadState.Archiving(null))
                 val zipFile = tempDir.resolve("${SystemClock.elapsedRealtime().toString(16)}.zip")
                 try {
-                    val params = ZipParameters().apply { rootFolderNameInZip = baseDir }
+                    val params = ZipParameters()
                     ZipFile(zipFile).addFolder(parentDir, params)
                 } catch (e: Exception) {
                     Timber.e(e)
@@ -150,23 +152,32 @@ class ExternalStorageRepositoryImpl @Inject constructor(
 
                 send(DownloadState.Exporting(null))
                 try {
-                    val contentResolver = context.contentResolver
-                    val relDir = File(Environment.DIRECTORY_PICTURES, baseDir).path
+                    val outputStream = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        val contentResolver = context.contentResolver
+                        val relDir = File(Environment.DIRECTORY_DOWNLOADS, baseDir).path
 
-                    val contentValues = ContentValues().apply {
-                        put(MediaStore.Images.Media.DISPLAY_NAME, outputName)
-                        put(MediaStore.Images.Media.MIME_TYPE, "application/zip")
-                        put(MediaStore.Images.Media.RELATIVE_PATH, relDir)
+                        val contentValues = ContentValues().apply {
+                            put(MediaStore.Downloads.DISPLAY_NAME, outputName)
+                            put(MediaStore.Downloads.MIME_TYPE, "application/zip")
+                            put(MediaStore.Downloads.RELATIVE_PATH, relDir)
+                        }
+
+                        val outputUrl =
+                            contentResolver.insert(
+                                MediaStore.Downloads.EXTERNAL_CONTENT_URI,
+                                contentValues
+                            ) ?: throw Exception("파일을 생성하지 못했습니다.")
+
+                        contentResolver.openOutputStream(outputUrl, "rwt")
+                            ?: throw Exception("파일을 열지 못했습니다.")
+                    } else {
+                        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                            .resolve(baseDir).apply {
+                                mkdirs()
+                            }.resolve(outputName).apply {
+                                createNewFile()
+                            }.outputStream()
                     }
-
-                    val outputUrl =
-                        contentResolver.insert(
-                            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                            contentValues
-                        ) ?: throw Exception("파일을 생성하지 못했습니다.")
-
-                    val outputStream = contentResolver.openOutputStream(outputUrl, "rwt")
-                        ?: throw Exception("파일을 열지 못했습니다.")
 
                     val source = zipFile.source().buffer()
                     outputStream.sink().buffer().apply {
@@ -179,6 +190,8 @@ class ExternalStorageRepositoryImpl @Inject constructor(
                 } catch (e: Exception) {
                     Timber.e(e)
                     send(DownloadState.Exporting(e.message))
+                } finally {
+                    tempDir.deleteRecursively()
                 }
             } catch (e: Exception) {
                 Timber.e(e)

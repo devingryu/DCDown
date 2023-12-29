@@ -107,7 +107,7 @@ class ConDownloadWorker private constructor(context: Context, param: WorkerParam
                     if (it is DownloadState.Downloading) {
                         add(it)
                         setNotification(downloadMessage,  max, this.size, false)
-                    } else if (it.error == null) {
+                    } else if (it.error != null) {
                         clear()
                         for (info in conSaveInfos)
                             add(DownloadState.Downloading(info.fileName, it.error))
