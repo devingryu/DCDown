@@ -6,8 +6,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.WorkManager
 import com.ibd.dcdown.dto.ConData
 import com.ibd.dcdown.dto.ConPack
+import com.ibd.dcdown.dto.ConSaveInfo
 import com.ibd.dcdown.main.repository.ExternalStorageRepository
 import com.ibd.dcdown.repository.ConRepository
 import com.ibd.dcdown.repository.DataStoreRepository
@@ -16,6 +18,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -71,11 +74,12 @@ class DetailViewModel @Inject constructor(
 
     private fun requestSave(list: List<ConData>, baseDir: String) = viewModelScope.launch {
         if (list.isEmpty()) return@launch
-        val errors = esr.saveImages(
+        val result = esr.saveImages(
             baseDir,
-            list.map { "${it.name}.${it.ext}" to "${C.IMG_BASE_URL}${it.uri}" }
-        )
-        sendEvent(E.Toast("${list.size - errors.size}/${list.size}개 다운로드 성공"))
+            list.map { ConSaveInfo("${it.name}.${it.ext}", "${C.IMG_BASE_URL}${it.uri}") }
+        ).toList()
+        val successSize = result.count { it.error == null }
+        sendEvent(E.Toast("${successSize}/${result.size}개 다운로드 성공"))
     }
 
     fun requestSaveSelected(ignoreSelection: Boolean) {

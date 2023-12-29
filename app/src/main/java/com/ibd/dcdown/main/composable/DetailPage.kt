@@ -50,10 +50,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.work.WorkManager
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.ibd.dcdown.R
+import com.ibd.dcdown.dto.ConSaveInfo
+import com.ibd.dcdown.main.service.ConDownloadWorker
 import com.ibd.dcdown.main.viewmodel.DetailViewModel
 import com.ibd.dcdown.tools.C
 
@@ -109,7 +112,15 @@ fun DetailPage(id: String, vm: DetailViewModel = hiltViewModel()) {
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { vm.requestSaveSelected(false) }) {
+            FloatingActionButton(onClick = {
+                vm.data?.let { conPack ->
+                    val list = vm.list.filter { it.selected }
+                        .map { ConSaveInfo("${it.name}.${it.ext}", "${C.IMG_BASE_URL}${it.uri}") }
+                    WorkManager.getInstance(context)
+                        .enqueue(ConDownloadWorker.Builder(conPack.copy(data = listOf()), list, false).build())
+                }
+//                vm.requestSaveSelected(false)
+            }) {
                 Icon(Icons.Filled.Save, stringResource(R.string.save))
             }
         }
@@ -139,7 +150,11 @@ fun DetailPage(id: String, vm: DetailViewModel = hiltViewModel()) {
                         contentDescription = it.name,
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop,
-                        placeholder = ColorPainter(MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp))
+                        placeholder = ColorPainter(
+                            MaterialTheme.colorScheme.surfaceColorAtElevation(
+                                2.dp
+                            )
+                        )
                     )
                     CircleCheckBox(
                         modifier = Modifier.align(Alignment.BottomEnd),

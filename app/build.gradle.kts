@@ -104,6 +104,7 @@ dependencies {
     implementation("io.coil-kt:coil-gif:2.5.0")
     implementation("com.google.accompanist:accompanist-systemuicontroller:0.30.1")
     implementation("com.google.accompanist:accompanist-permissions:0.30.1")
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
 
     implementation("com.google.protobuf:protobuf-kotlin-lite:$protocVersion")
 }

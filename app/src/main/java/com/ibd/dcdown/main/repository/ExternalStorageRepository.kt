@@ -1,9 +1,20 @@
 package com.ibd.dcdown.main.repository
 
 import android.graphics.Bitmap
+import com.ibd.dcdown.dto.ConSaveInfo
+import kotlinx.coroutines.flow.Flow
+
 
 interface ExternalStorageRepository {
 
-    /** files: Pair of (fileName, Url) */
-    suspend fun saveImages(baseDir: String, files: List<Pair<String, String>>): List<String?>
+    fun saveImages(
+        baseDir: String,
+        files: List<ConSaveInfo>
+    ): Flow<ExternalStorageRepositoryImpl.DownloadState>
+
+    fun saveCompressed(
+        baseDir: String,
+        outputName: String,
+        files: List<ConSaveInfo>
+    ): Flow<ExternalStorageRepositoryImpl.DownloadState>
 }

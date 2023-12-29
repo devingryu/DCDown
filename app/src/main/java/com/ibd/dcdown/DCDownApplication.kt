@@ -1,7 +1,12 @@
 package com.ibd.dcdown
 
+import android.Manifest.permission.POST_NOTIFICATIONS
 import android.app.Application
 import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale
+import androidx.core.content.ContextCompat
 import com.ibd.dcdown.tools.AuthUtil
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.runBlocking

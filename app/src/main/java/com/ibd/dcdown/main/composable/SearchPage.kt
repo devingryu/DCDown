@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.NewReleases
 import androidx.compose.material.icons.filled.Whatshot
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -32,6 +33,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -40,6 +42,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -56,12 +59,13 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.ibd.dcdown.R
+import com.ibd.dcdown.dto.ConPack
 import com.ibd.dcdown.main.view.DetailActivity
 import com.ibd.dcdown.main.viewmodel.SearchViewModel.E
 import com.ibd.dcdown.main.viewmodel.SearchViewModel
 import com.ibd.dcdown.tools.Extensions.bottomBorder
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun SearchPage(vm: SearchViewModel = hiltViewModel()) {
     val systemUiController = rememberSystemUiController()
@@ -84,12 +88,13 @@ fun SearchPage(vm: SearchViewModel = hiltViewModel()) {
             }
         }
     }
-//    val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
+    val sheetState = rememberModalBottomSheetState()
+    var sheetData: ConPack? by rememberSaveable { mutableStateOf(null) }
 
     val filter = listOf(Filter.Hot, Filter.New)
     var query by remember { mutableStateOf("") }
-    Scaffold() { paddingValues ->
+    Scaffold { paddingValues ->
         Column(
             Modifier
                 .fillMaxSize()
@@ -173,12 +178,22 @@ fun SearchPage(vm: SearchViewModel = hiltViewModel()) {
                             putExtra("id", it.idx)
                             context.startActivity(this)
                         }
+                    }, onClickItemMore = {
+
                     }, onLoadMore = {
                         vm.requestList(false)
                     }
                 )
                 if (vm.isRefreshing)
                     CircularProgressIndicator(Modifier.align(Alignment.Center))
+
+                sheetData?.let {
+                    ConMenuBottomSheet(
+                        sheetState = sheetState,
+                        data = it,
+                        onClick = { type, data -> },
+                        onDismiss = { sheetData = null })
+                }
             }
 
         }

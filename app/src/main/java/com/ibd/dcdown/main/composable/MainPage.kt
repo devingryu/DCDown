@@ -76,6 +76,7 @@ import com.ibd.dcdown.main.view.SearchActivity
 import com.ibd.dcdown.main.viewmodel.HomeViewModel
 import com.ibd.dcdown.main.viewmodel.MyConViewModel
 import com.ibd.dcdown.tools.AuthUtil
+import com.ibd.dcdown.tools.C
 
 @Composable
 fun MainPage() {
@@ -237,7 +238,13 @@ private fun MainHomeScreen(
             ConMenuBottomSheet(
                 sheetState = sheetState,
                 data = it,
-                onClick = { type, data -> },
+                onClick = { type, data ->
+                    when(type) {
+                        C.CON_PACK_CLICK_DETAIL -> {
+
+                        }
+                    }
+                },
                 onDismiss = { sheetData = null })
         }
     }
