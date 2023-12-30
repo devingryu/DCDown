@@ -32,7 +32,7 @@ import com.ibd.dcdown.ui.theme.Gray900
 @Composable
 fun CircleCheckBox(isChecked: Boolean, modifier: Modifier = Modifier, insets: PaddingValues = PaddingValues(8.dp),onCheckedChange: (Boolean) -> Unit) {
     val backgroundColor =
-        if (isChecked) MaterialTheme.colorScheme.primary else Gray900.copy(alpha = 0.15f)
+        if (isChecked) MaterialTheme.colorScheme.primary else Gray900.copy(alpha = 0.25f)
     val borderColor =
         if (isChecked) MaterialTheme.colorScheme.primary else Color.White
     Box(
@@ -47,7 +47,7 @@ fun CircleCheckBox(isChecked: Boolean, modifier: Modifier = Modifier, insets: Pa
             .padding(insets)
             .clip(CircleShape)
             .background(backgroundColor)
-            .border(1.dp, borderColor, CircleShape)
+            .border(2.dp, borderColor, CircleShape)
             .padding(2.dp)
     ) {
         if (isChecked)

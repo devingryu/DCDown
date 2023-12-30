@@ -15,9 +15,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -78,13 +80,12 @@ import com.ibd.dcdown.main.viewmodel.MyConViewModel
 import com.ibd.dcdown.tools.AuthUtil
 import com.ibd.dcdown.tools.C
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainPage() {
     val context = LocalContext.current
-    val systemUiController = rememberSystemUiController()
-    val useDarkIcons = !isSystemInDarkTheme()
-    val statusBarColor = MaterialTheme.colorScheme.surface
-    val navBarColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
+    val sheetState = rememberModalBottomSheetState()
+    var sheetData: ConPack? by rememberSaveable { mutableStateOf(null) }
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
@@ -94,11 +95,7 @@ fun MainPage() {
         MainScreen.More
     )
 
-    DisposableEffect(systemUiController, useDarkIcons) {
-        systemUiController.setStatusBarColor(statusBarColor, useDarkIcons)
-        systemUiController.setNavigationBarColor(navBarColor, useDarkIcons)
-        onDispose { }
-    }
+    val setSheetData: (ConPack?) -> Unit = { sheetData = it }
 
     Scaffold(
         bottomBar = {
@@ -139,14 +136,35 @@ fun MainPage() {
             }
         }
     ) { innerPadding ->
+        println(innerPadding)
         NavHost(
             modifier = Modifier.padding(innerPadding),
             navController = navController,
             startDestination = MainScreen.Home.route,
         ) {
-            composable("home") { MainHomeScreen() }
-            composable("history") { MainMyConScreen() }
+            composable("home") { MainHomeScreen(setSheetData) }
+            composable("history") { MainMyConScreen(setSheetData) }
             composable("more") { MainMoreScreen() }
+        }
+        sheetData?.let {
+            ConMenuBottomSheet(
+                sheetState = sheetState,
+                data = it,
+                onClick = { type, data ->
+                    when (type) {
+                        C.CON_PACK_CLICK_DETAIL -> {
+                            Intent(context, DetailActivity::class.java).apply {
+                                putExtra("id", it.idx)
+                                context.startActivity(this)
+                            }
+                        }
+
+                        C.CON_PACK_CLICK_DOWNLOAD_DEFAULT -> {
+
+                        }
+                    }
+                },
+                onDismiss = { sheetData = null })
         }
     }
 }
@@ -154,14 +172,13 @@ fun MainPage() {
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 private fun MainHomeScreen(
-    vm: HomeViewModel = hiltViewModel()
+    setSheetData: (ConPack?) -> Unit,
+    vm: HomeViewModel = hiltViewModel(),
 ) {
     LaunchedEffect(Unit) {
         if (vm.list.isEmpty())
             vm.requestList(true)
     }
-    val sheetState = rememberModalBottomSheetState()
-    var sheetData: ConPack? by rememberSaveable { mutableStateOf(null) }
 
     val event by vm.eventChannel.collectAsState(initial = null)
     val context = LocalContext.current
@@ -227,25 +244,11 @@ private fun MainHomeScreen(
                         context.startActivity(this)
                     }
                 }, onClickItemMore = {
-                    sheetData = it
+                    setSheetData(it)
                 }, onLoadMore = {
                     vm.requestList(false)
                 }
             )
-        }
-
-        sheetData?.let {
-            ConMenuBottomSheet(
-                sheetState = sheetState,
-                data = it,
-                onClick = { type, data ->
-                    when(type) {
-                        C.CON_PACK_CLICK_DETAIL -> {
-
-                        }
-                    }
-                },
-                onDismiss = { sheetData = null })
         }
     }
 }
@@ -253,12 +256,12 @@ private fun MainHomeScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MainMyConScreen(
-    vm: MyConViewModel = hiltViewModel()
+    setSheetData: (ConPack?) -> Unit,
+    vm: MyConViewModel = hiltViewModel(),
 ) {
     val user by AuthUtil.loginUser.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val sheetState = rememberModalBottomSheetState()
-    var sheetData: ConPack? by rememberSaveable { mutableStateOf(null) }
 
     LaunchedEffect(user) {
         if (vm.list.isEmpty())
@@ -298,22 +301,17 @@ private fun MainMyConScreen(
                     },
                     onClickItemMore = {
                         if (it.packageIdx != null)
-                            sheetData = ConPack(
-                                it.title ?: "",
-                                "",
-                                it.packageIdx,
-                                it.img,
-                                listOf()
+                            setSheetData(
+                                ConPack(
+                                    it.title ?: "",
+                                    "",
+                                    it.packageIdx,
+                                    it.img,
+                                    listOf()
+                                )
                             )
                     },
                 )
-            sheetData?.let {
-                ConMenuBottomSheet(
-                    sheetState = sheetState,
-                    data = it,
-                    onClick = { type, data -> },
-                    onDismiss = { sheetData = null })
-            }
         }
 
     } else {

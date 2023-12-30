@@ -3,6 +3,7 @@ package com.ibd.dcdown.main.view
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import com.ibd.dcdown.main.composable.MainPage
 import com.ibd.dcdown.tools.PermissionUtil
 import com.ibd.dcdown.tools.PermissionUtil.requestNotificationPermission
@@ -13,11 +14,12 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        requestNotificationPermission()
         setContent {
             DCDownTheme {
                 MainPage()
             }
         }
-        requestNotificationPermission()
     }
 }
