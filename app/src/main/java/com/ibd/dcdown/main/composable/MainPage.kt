@@ -69,10 +69,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.work.WorkManager
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.ibd.dcdown.R
 import com.ibd.dcdown.dto.ConPack
 import com.ibd.dcdown.login.view.LoginActivity
+import com.ibd.dcdown.main.service.ConDownloadWorker
 import com.ibd.dcdown.main.view.DetailActivity
 import com.ibd.dcdown.main.view.SearchActivity
 import com.ibd.dcdown.main.viewmodel.HomeViewModel
@@ -136,7 +138,6 @@ fun MainPage() {
             }
         }
     ) { innerPadding ->
-        println(innerPadding)
         NavHost(
             modifier = Modifier.padding(innerPadding),
             navController = navController,
@@ -160,9 +161,18 @@ fun MainPage() {
                         }
 
                         C.CON_PACK_CLICK_DOWNLOAD_DEFAULT -> {
+                            Toast.makeText(context, R.string.start_download, Toast.LENGTH_SHORT).show()
+                            WorkManager.getInstance(context)
+                                .enqueue(ConDownloadWorker.Builder(it.idx, listOf(), false).build())
+                        }
 
+                        C.CON_PACK_CLICK_DOWNLOAD_COMPRESSED -> {
+                            Toast.makeText(context, R.string.start_download, Toast.LENGTH_SHORT).show()
+                            WorkManager.getInstance(context)
+                                .enqueue(ConDownloadWorker.Builder(it.idx, listOf(), true).build())
                         }
                     }
+                    sheetData = null
                 },
                 onDismiss = { sheetData = null })
         }

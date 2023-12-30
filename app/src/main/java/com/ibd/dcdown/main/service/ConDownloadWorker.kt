@@ -2,7 +2,6 @@ package com.ibd.dcdown.main.service
 
 import android.Manifest.permission.POST_NOTIFICATIONS
 import android.annotation.SuppressLint
-import android.app.Service
 import android.content.Context
 import android.content.pm.ServiceInfo
 import android.os.Build
@@ -16,7 +15,6 @@ import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
-import androidx.work.impl.foreground.SystemForegroundService
 import androidx.work.workDataOf
 import com.ibd.dcdown.R
 import com.ibd.dcdown.dto.ConPack
@@ -43,19 +41,14 @@ class ConDownloadWorker private constructor(context: Context, param: WorkerParam
 
     @SuppressLint("MissingPermission")
     override suspend fun doWork(): Result {
-        val conPackRaw = inputData.getString(KEY_CON_PACK) ?: return Result.failure()
-        val conSaveInfosRaw = inputData.getString(KEY_CON_SAVE_INFOS) ?: return Result.failure()
+        val conPackId = inputData.getString(KEY_CON_PACK_ID) ?: return Result.failure()
+        val conDataIds = inputData.getStringArray(KEY_CON_DATA_IDS)?.toHashSet() ?: return Result.failure()
         val doCompress = inputData.getBoolean(KEY_DO_COMPRESS, false)
         val cancel = applicationContext.getString(R.string.cancel)
         val cancelIntent = WorkManager.getInstance(applicationContext)
             .createCancelPendingIntent(id)
 
         try {
-            val json = ServiceClient.json
-            val conPack = json.decodeFromString<ConPack>(conPackRaw)
-            var conSaveInfos = json.decodeFromString<List<ConSaveInfo>>(conSaveInfosRaw)
-
-
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val name = applicationContext.getString(R.string.notification_channel_name_download)
                 val desc = applicationContext.getString(R.string.notification_channel_desc_download)
@@ -67,10 +60,11 @@ class ConDownloadWorker private constructor(context: Context, param: WorkerParam
                         .build()
                 notificationManager.createNotificationChannel(mChannel)
             }
+            val defaultTitle = applicationContext.getString(R.string.alert_default_title)
             notificationBuilder =
                 NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
-                    .setContentTitle(conPack.name)
-                    .setTicker(conPack.name)
+                    .setContentTitle(defaultTitle)
+                    .setTicker(defaultTitle)
                     .setSmallIcon(R.drawable.baseline_download_24)
                     .setOngoing(true)
                     .setSilent(true)
@@ -78,32 +72,38 @@ class ConDownloadWorker private constructor(context: Context, param: WorkerParam
 
             setNotification(applicationContext.getString(R.string.alert_idle), 1, 1, true)
 
-            // conSaveInfos가 비었으면 ConPack 정보를 fetch하여 전체 다운로드
-            if (conSaveInfos.isEmpty()) {
-                setNotification(
-                    applicationContext.getString(R.string.alert_fetching_package_info),
-                    1,
-                    1,
-                    true
+            setNotification(
+                applicationContext.getString(R.string.alert_fetching_package_info),
+                1,
+                1,
+                true
+            )
+            val conPack = cr.requestConPack(conPackId)
+            val conSaveInfos = conPack.data.run {
+                if (conDataIds.isNotEmpty())
+                    filter { conDataIds.contains(it.id) }
+                else this
+            }.map {
+                ConSaveInfo(
+                    "${it.name}.${it.ext}",
+                    "${C.IMG_BASE_URL}${it.uri}"
                 )
-                val fetched = cr.requestConPack(conPack.idx)
-                conSaveInfos = fetched.data.map {
-                    ConSaveInfo(
-                        "${it.name}.${it.ext}",
-                        "${C.IMG_BASE_URL}${it.uri}"
-                    )
-                }
             }
+            notificationBuilder = notificationBuilder
+                ?.setContentTitle(conPack.name)
+                ?.setTicker(conPack.name)
 
-            val baseDir = "/DCDown/${conPack.name}/" // TODO: Basedir as preference
-            val flow = if (doCompress)
+            val flow = if (doCompress) {
+                val baseDir = "/DCDown/" // TODO: Basedir as preference
                 esr.saveCompressed(baseDir, conPack.name, conSaveInfos)
-            else esr.saveImages(baseDir, conSaveInfos)
+            } else {
+                val baseDir = "/DCDown/${conPack.name}/" // TODO: Basedir as preference
+                esr.saveImages(baseDir, conSaveInfos)
+            }
             val result = buildList {
                 val downloadMessage = applicationContext.getString(R.string.alert_downloading)
                 val max = conSaveInfos.size
                 flow.collect {
-                    println(it)
                     if (it is DownloadState.Downloading) {
                         add(it)
                         setNotification(downloadMessage,  max, this.size, false)
@@ -124,8 +124,6 @@ class ConDownloadWorker private constructor(context: Context, param: WorkerParam
                     }
                 }
             }
-            // TODO: track zipping process
-
             // TODO: Save result in DB
             if (PermissionUtil.getUserPermissionCheck(
                     applicationContext,
@@ -180,23 +178,23 @@ class ConDownloadWorker private constructor(context: Context, param: WorkerParam
 
     companion object {
         // 디시콘 패키지 정보
-        const val KEY_CON_PACK = "KEY_CON_PACK"
+        const val KEY_CON_PACK_ID = "KEY_CON_PACK_ID"
 
         // 다운로드 할 디시콘 리스트(null일 시 전체 저장)
-        const val KEY_CON_SAVE_INFOS = "KEY_CON_SAVE_INFOS"
+        const val KEY_CON_DATA_IDS = "KEY_CON_DATA_IDS"
 
         // 압축 여부(전체 저장 시에만 유효)
         const val KEY_DO_COMPRESS = "KEY_DO_COMPRESS"
         const val NOTIFICATION_CHANNEL_ID = "ch_download"
 
         fun Builder(
-            conPack: ConPack,
-            conSaveInfos: List<ConSaveInfo>,
+            conPackId: String,
+            conDataIds: List<String>,
             doCompress: Boolean
         ): OneTimeWorkRequest.Builder {
             val data = workDataOf(
-                KEY_CON_PACK to ServiceClient.json.encodeToString(conPack),
-                KEY_CON_SAVE_INFOS to ServiceClient.json.encodeToString(conSaveInfos),
+                KEY_CON_PACK_ID to conPackId,
+                KEY_CON_DATA_IDS to conDataIds.toTypedArray(),
                 KEY_DO_COMPRESS to doCompress
             )
             return OneTimeWorkRequestBuilder<ConDownloadWorker>()

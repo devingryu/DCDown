@@ -116,7 +116,6 @@ class ExternalStorageRepositoryImpl @Inject constructor(
                 if (tempDir.isDirectory && tempDir.exists())
                     tempDir.deleteRecursively()
                 parentDir.mkdirs()
-                println(parentDir.path)
 
                 for (file in files) {
                     try {

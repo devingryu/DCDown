@@ -114,12 +114,10 @@ fun DetailPage(id: String, vm: DetailViewModel = hiltViewModel()) {
         floatingActionButton = {
             FloatingActionButton(onClick = {
                 vm.data?.let { conPack ->
-                    val list = vm.list.filter { it.selected }
-                        .map { ConSaveInfo("${it.name}.${it.ext}", "${C.IMG_BASE_URL}${it.uri}") }
+                    val list = vm.list.filter { it.selected }.map { it.id }
                     WorkManager.getInstance(context)
-                        .enqueue(ConDownloadWorker.Builder(conPack.copy(data = listOf()), list, false).build())
+                        .enqueue(ConDownloadWorker.Builder(conPack.idx, list, false).build())
                 }
-//                vm.requestSaveSelected(false)
             }) {
                 Icon(Icons.Filled.Save, stringResource(R.string.save))
             }

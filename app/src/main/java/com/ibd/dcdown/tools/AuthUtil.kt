@@ -51,6 +51,7 @@ import java.util.Locale
 import java.util.TimeZone
 import kotlin.jvm.Throws
 
+// TODO:  [{"result":false,"cause":"certification_login"}]
 object AuthUtil {
     private val storeKey = stringPreferencesKey("auth")
     private val seoulTimeZone = TimeZone.getTimeZone("Asia/Seoul")
