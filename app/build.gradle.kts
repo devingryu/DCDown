@@ -5,6 +5,7 @@ plugins {
     id("com.google.dagger.hilt.android")
     kotlin("plugin.serialization") version "1.8.10"
     id("com.google.protobuf") version "0.9.3"
+    id("com.google.android.gms.oss-licenses-plugin")
 }
 
 val protocVersion = "3.24.3"
@@ -105,6 +106,7 @@ dependencies {
     implementation("com.google.accompanist:accompanist-systemuicontroller:0.30.1")
     implementation("com.google.accompanist:accompanist-permissions:0.30.1")
     implementation("androidx.work:work-runtime-ktx:2.9.0")
+    implementation("com.google.android.gms:play-services-oss-licenses:17.0.1")
 
     implementation("com.google.protobuf:protobuf-kotlin-lite:$protocVersion")
 }

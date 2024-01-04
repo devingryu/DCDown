@@ -39,6 +39,10 @@
         <activity android:name=".login.view.LoginActivity" />
         <activity android:name=".main.view.DetailActivity" />
         <activity android:name=".main.view.SearchActivity" />
+        <activity android:name="com.google.android.gms.oss.licenses.OssLicensesMenuActivity"
+            android:theme="@style/Theme.AppCompat.Light" />
+        <activity android:name="com.google.android.gms.oss.licenses.OssLicensesActivity"
+            android:theme="@style/Theme.AppCompat.Light" />
     </application>
 
 </manifest>

@@ -102,9 +102,13 @@ object AuthUtil {
      * login and set current session account.
      * @throws IllegalArgumentException if login fails
      */
-    suspend fun setAccount(context: Context, user: User): User {
+    suspend fun setAccount(context: Context, user: User?, clearState: Boolean = false): User? {
+        if (clearState)
+            clearState()
         val loggedIn = try {
-            requestLogin(user)
+            if (user != null)
+                requestLogin(user)
+            else null
         } catch (de: DCException) {
             Timber.e(de)
             throw de
@@ -145,6 +149,17 @@ object AuthUtil {
             Timber.e(e)
             // TODO: firebase crashlytics
         }
+    }
+
+    private suspend fun clearState() {
+        fcmToken = null
+        fid = null
+        refreshToken = null
+        time = null
+        lastRefreshTime = null
+        appInfo = null
+
+        saveState()
     }
 
     suspend fun getAppId(): String = withContext(Dispatchers.IO) {
@@ -263,7 +278,10 @@ object AuthUtil {
         return ServiceClient.okHttp.newCall(request).await()
     }
 
-    private suspend fun requestFirebaseInstallation(argFid: String? = null, argRefreshToken: String? = null): FirebaseInstallationsResponse {
+    private suspend fun requestFirebaseInstallation(
+        argFid: String? = null,
+        argRefreshToken: String? = null
+    ): FirebaseInstallationsResponse {
         val request = Request.Builder().url(C.ApiUrl.Firebase.INSTALLATIONS)
             .header("X-Android-Package", C.Installations.X_ANDROID_PACKAGE)
             .header("X-Android-Cert", C.Installations.X_ANDROID_CERT)
@@ -320,10 +338,20 @@ object AuthUtil {
 
         GlobalScope.launch {
             launch {
-                requestRegister3(checkinResponse, clientToken, token, C.Register3.X_SCOPE_REFRESH_REMOTE_CONFIG)
+                requestRegister3(
+                    checkinResponse,
+                    clientToken,
+                    token,
+                    C.Register3.X_SCOPE_REFRESH_REMOTE_CONFIG
+                )
             }
             launch {
-                requestRegister3(checkinResponse, clientToken, token, C.Register3.X_SCOPE_SHOW_NOTICE_MESSAGE)
+                requestRegister3(
+                    checkinResponse,
+                    clientToken,
+                    token,
+                    C.Register3.X_SCOPE_SHOW_NOTICE_MESSAGE
+                )
             }
         }
         fcmToken = clientToken
@@ -379,7 +407,8 @@ object AuthUtil {
                     time = appCheck.date
                     return sha256("dcArdchk_$time")
                 }
-            } catch (_: Exception) { }
+            } catch (_: Exception) {
+            }
 
             lastRefreshTime = now
             time = dateToString(now)

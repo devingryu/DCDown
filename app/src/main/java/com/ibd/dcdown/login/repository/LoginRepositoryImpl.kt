@@ -14,6 +14,6 @@ class LoginRepositoryImpl @Inject constructor(
 ): LoginRepository {
 
     override suspend fun login(id: String, pw: String) =
-        AuthUtil.setAccount(context, User(id, pw))
+        AuthUtil.setAccount(context, User(id, pw))!!
 
 }
