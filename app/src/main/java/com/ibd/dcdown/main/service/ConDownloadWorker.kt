@@ -163,7 +163,7 @@ class ConDownloadWorker private constructor(context: Context, param: WorkerParam
             ?.setContentText(message)
             ?.setProgress(max, current, indeterminate).apply {
                 if (!indeterminate)
-                    this?.setSubText("($current/$max)")
+                    this?.setSubText("$current/$max")
             }
             ?.build()
 
