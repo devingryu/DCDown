@@ -54,6 +54,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.startActivity
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -271,7 +272,6 @@ private fun MainMyConScreen(
 ) {
     val user by AuthUtil.loginUser.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    val sheetState = rememberModalBottomSheetState()
 
     LaunchedEffect(user) {
         if (vm.list.isEmpty())
@@ -326,11 +326,12 @@ private fun MainMyConScreen(
 
     } else {
         Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.fillMaxSize().padding(top = 24.dp, start = 16.dp, end = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Button(onClick = {
+            Text(stringResource(R.string.login_prompt_message), style = MaterialTheme.typography.bodyLarge, textAlign = TextAlign.Center)
+            Button(modifier = Modifier.fillMaxWidth(), onClick = {
                 context.startActivity(
                     Intent(
                         context,
