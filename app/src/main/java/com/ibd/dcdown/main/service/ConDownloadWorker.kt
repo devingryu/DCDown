@@ -17,23 +17,20 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.ibd.dcdown.R
-import com.ibd.dcdown.dto.ConPack
 import com.ibd.dcdown.dto.ConSaveInfo
 import com.ibd.dcdown.main.repository.ExternalStorageRepositoryImpl
 import com.ibd.dcdown.main.repository.ExternalStorageRepositoryImpl.DownloadState
 import com.ibd.dcdown.repository.ConRepositoryImpl
 import com.ibd.dcdown.tools.C
 import com.ibd.dcdown.tools.PermissionUtil
-import com.ibd.dcdown.tools.ServiceClient
-import kotlinx.serialization.encodeToString
 
-class ConDownloadWorker private constructor(context: Context, param: WorkerParameters) :
-    CoroutineWorker(context, param) {
+class ConDownloadWorker constructor(appContext: Context, workerParameters: WorkerParameters) :
+    CoroutineWorker(appContext, workerParameters) {
 
     private val cr = ConRepositoryImpl()
-    private val esr = ExternalStorageRepositoryImpl(context)
+    private val esr = ExternalStorageRepositoryImpl(appContext)
 
-    private val notificationManager = NotificationManagerCompat.from(context)
+    private val notificationManager = NotificationManagerCompat.from(appContext)
 
     private var notificationBuilder: NotificationCompat.Builder? = null
 
