@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">DCDown</string>
+    <string name="app_name">디시콘 다운로더</string>
     <string name="notification_channel_name_download">다운로드</string>
     <string name="notification_channel_desc_download">다운로드 진행 상황을 표시하는 알림입니다.</string>
 
