@@ -6,6 +6,7 @@ plugins {
     kotlin("plugin.serialization") version "1.8.10"
     id("com.google.protobuf") version "0.9.3"
     id("com.google.android.gms.oss-licenses-plugin")
+    id("com.google.gms.google-services")
 }
 
 val protocVersion = "3.24.3"
@@ -18,8 +19,8 @@ android {
         applicationId = "com.ibd.dcdown"
         minSdk = 21
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 24
+        versionName = "4.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -109,6 +110,8 @@ dependencies {
     implementation("com.google.android.gms:play-services-oss-licenses:17.0.1")
 
     implementation("com.google.protobuf:protobuf-kotlin-lite:$protocVersion")
+    implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
+    implementation("com.google.firebase:firebase-analytics")
 }
 
 protobuf {

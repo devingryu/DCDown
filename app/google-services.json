@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "656960955285",
+    "firebase_url": "https://dcdown.firebaseio.com",
+    "project_id": "dcdown",
+    "storage_bucket": "dcdown.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:656960955285:android:1121b670adec6a705acc9c",
+        "android_client_info": {
+          "package_name": "com.ibd.dcdown"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "656960955285-pkt669t5ml2ohbfra6d4p6d19kf14jio.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBOco_VjFIXSKQdG8teBBq1GFr49Ovnyic"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "656960955285-pkt669t5ml2ohbfra6d4p6d19kf14jio.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
