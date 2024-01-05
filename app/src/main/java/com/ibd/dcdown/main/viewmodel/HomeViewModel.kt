@@ -23,7 +23,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val ds: DataStoreRepository,
     private val cr: ConRepository
 ) : ViewModel() {
     private val _eventChannel = Channel<E>()

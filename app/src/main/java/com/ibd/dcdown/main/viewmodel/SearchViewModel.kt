@@ -43,7 +43,7 @@ class SearchViewModel @Inject constructor(
     var hasMore by mutableStateOf(true)
         private set
 
-    var requestJob: Job? = null
+    private var requestJob: Job? = null
 
     fun requestList(isRefresh: Boolean) {
         if (query.isEmpty() || (!isRefresh && (!hasMore || isLoadingMore))) return

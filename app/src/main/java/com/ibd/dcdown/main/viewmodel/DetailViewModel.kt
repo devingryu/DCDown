@@ -7,6 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
+import coil.compose.AsyncImagePainter
 import com.ibd.dcdown.dto.ConData
 import com.ibd.dcdown.dto.ConPack
 import com.ibd.dcdown.dto.ConSaveInfo
@@ -25,9 +26,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class DetailViewModel @Inject constructor(
-    private val ds: DataStoreRepository,
     private val cr: ConRepository,
-    private val esr: ExternalStorageRepository,
 ) : ViewModel() {
     private val _eventChannel = Channel<E>()
     val eventChannel = _eventChannel.receiveAsFlow()
@@ -70,24 +69,6 @@ class DetailViewModel @Inject constructor(
                 sendEvent(E.Toast(it.message))
             }
 
-    }
-
-    private fun requestSave(list: List<ConData>, baseDir: String) = viewModelScope.launch {
-        if (list.isEmpty()) return@launch
-        val result = esr.saveImages(
-            baseDir,
-            list.map { ConSaveInfo("${it.name}.${it.ext}", "${C.IMG_BASE_URL}${it.uri}") }
-        ).toList()
-        val successSize = result.count { it.error == null }
-        sendEvent(E.Toast("${successSize}/${result.size}개 다운로드 성공"))
-    }
-
-    fun requestSaveSelected(ignoreSelection: Boolean) {
-        data?.let { data ->
-            val dir = "/DCDown/${data.name}/"
-            val list = if (ignoreSelection) ArrayList(list) else list.filter { it.selected }
-            requestSave(list, dir)
-        }
     }
 
     private fun sendEvent(e: E) = viewModelScope.launch {
