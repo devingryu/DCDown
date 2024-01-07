@@ -47,6 +47,7 @@
     <string name="archive_location">압축 저장 위치</string>
     <string name="app_info">앱 정보</string>
     <string name="version">버전</string>
+    <string name="github">Github</string>
     <string name="open_source_license">오픈소스 라이선스</string>
 
     <string name="login_prompt_message">로그인하여 디시콘 다운로더의\n모든 서비스를 이용하세요!</string>

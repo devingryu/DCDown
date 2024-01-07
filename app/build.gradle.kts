@@ -19,8 +19,8 @@ android {
         applicationId = "com.ibd.dcdown"
         minSdk = 21
         targetSdk = 34
-        versionCode = 26
-        versionName = "4.0.2"
+        versionCode = 27
+        versionName = "4.0.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

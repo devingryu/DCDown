@@ -12,6 +12,7 @@ import com.ibd.dcdown.repository.ConRepository
 import com.ibd.dcdown.repository.DataStoreRepository
 import com.ibd.dcdown.tools.C
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
@@ -46,6 +47,7 @@ class SearchViewModel @Inject constructor(
     private var requestJob: Job? = null
 
     fun requestList(isRefresh: Boolean) {
+        println("requestList")
         if (query.isEmpty() || (!isRefresh && (!hasMore || isLoadingMore))) return
         isRefreshing = isRefresh
         isLoadingMore = !isRefresh
@@ -65,7 +67,8 @@ class SearchViewModel @Inject constructor(
                     isRefreshing = false
                     isLoadingMore = false
                 }.onFailure {
-                    sendEvent(E.Toast(it.localizedMessage))
+                    if (it !is CancellationException)
+                        sendEvent(E.Toast(it.message))
                 }.onSuccess {
                     if (it != null) {
                         idx++

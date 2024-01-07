@@ -1,9 +1,11 @@
 package com.ibd.dcdown.main.composable
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -45,6 +47,7 @@ import com.ibd.dcdown.dto.MyCon
 import com.ibd.dcdown.tools.C
 import com.ibd.dcdown.ui.theme.DCDownTheme
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ConPackListCompact(
     modifier: Modifier = Modifier,
@@ -63,7 +66,10 @@ fun ConPackListCompact(
         items(data) {
             ConPackListCompactItem(
                 data = it,
-                modifier = Modifier.clickable { onClickItem(it) },
+                modifier = Modifier.combinedClickable(
+                    onClick = { onClickItem(it) },
+                    onLongClick = { onClickItemMore(it) }
+                ),
                 onMoreClick = { onClickItemMore(it) })
         }
         item {

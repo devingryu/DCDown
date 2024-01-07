@@ -180,7 +180,7 @@ fun MainPage() {
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun MainHomeScreen(
     setSheetData: (ConPack?) -> Unit,
@@ -264,7 +264,6 @@ private fun MainHomeScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MainMyConScreen(
     setSheetData: (ConPack?) -> Unit,
@@ -326,7 +325,9 @@ private fun MainMyConScreen(
 
     } else {
         Column(
-            modifier = Modifier.fillMaxSize().padding(top = 24.dp, start = 16.dp, end = 16.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 24.dp, start = 16.dp, end = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
@@ -406,6 +407,7 @@ private fun MainMoreScreen(
                     stringResource(R.string.version),
                     content = BuildConfig.VERSION_NAME
                 )
+
                 BasicPreference(stringResource(R.string.open_source_license), "") {
                     context.startActivity(Intent(context, OssLicensesMenuActivity::class.java))
                 }

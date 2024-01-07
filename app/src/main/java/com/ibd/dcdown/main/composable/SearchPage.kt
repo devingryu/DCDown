@@ -149,7 +149,7 @@ fun SearchPage(vm: SearchViewModel = hiltViewModel()) {
                 .clip(RoundedCornerShape(12.dp))) {
                 ConPackList(
                     data = vm.list,
-                    isLoading = vm.isLoadingMore,
+                    isLoading = vm.isLoadingMore || vm.isRefreshing,
                     hasMore = vm.hasMore,
                     header = {
                         if (vm.list.isNotEmpty())

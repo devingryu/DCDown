@@ -23,7 +23,7 @@ import javax.inject.Singleton
 @Singleton
 class ConRepositoryImpl @Inject constructor() : ConRepository {
     override suspend fun requestConPacks(uri: String): List<ConPack>? {
-        val doc: Document = withContext(Dispatchers.Default) {
+        val doc: Document = withContext(Dispatchers.IO) {
             Jsoup.connect(uri).timeout(6000).get()
         }
 
