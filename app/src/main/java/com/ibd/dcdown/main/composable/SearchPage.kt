@@ -184,8 +184,8 @@ fun SearchPage(vm: SearchViewModel = hiltViewModel()) {
                         vm.requestList(false)
                     }
                 )
-                if (vm.isRefreshing)
-                    CircularProgressIndicator(Modifier.align(Alignment.Center))
+//                if (vm.isRefreshing)
+//                    CircularProgressIndicator(Modifier.align(Alignment.Center))
 
                 sheetData?.let {
                     ConMenuBottomSheet(
