@@ -47,7 +47,6 @@ class SearchViewModel @Inject constructor(
     private var requestJob: Job? = null
 
     fun requestList(isRefresh: Boolean) {
-        println("requestList")
         if (query.isEmpty() || (!isRefresh && (!hasMore || isLoadingMore))) return
         isRefreshing = isRefresh
         isLoadingMore = !isRefresh
@@ -61,7 +60,7 @@ class SearchViewModel @Inject constructor(
             }
 
             val loc = if (filter == C.FILTER_HOT) "hot" else "new"
-            val url = "https://dccon.dcinside.com/$loc/${idx + 1}/title/$query"
+            val url = "https://dccon.dcinside.com/$loc/${idx}/title/$query"
             runCatching { cr.requestConPacks(url) }
                 .also {
                     isRefreshing = false
