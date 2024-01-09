@@ -88,7 +88,9 @@ class ConRepositoryImpl @Inject constructor() : ConRepository {
                         .addEncoded("type", "setting")
                         .build()
                 ).build()
-            val raw = ServiceClient.okHttp.newCall(request).await().body!!.string()
+            val raw = withContext(Dispatchers.IO) {
+                ServiceClient.okHttp.newCall(request).await().body!!.string()
+            }
             return ServiceClient.json.decodeFromString(raw)
         } catch (e: Exception) {
             Timber.e(e)

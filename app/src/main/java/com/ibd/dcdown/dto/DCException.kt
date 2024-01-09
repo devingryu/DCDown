@@ -1,3 +1,3 @@
 package com.ibd.dcdown.dto
 
-class DCException: Exception()
+class DCException(override val message: String?): Exception()

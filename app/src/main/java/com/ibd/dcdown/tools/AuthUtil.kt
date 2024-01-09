@@ -5,6 +5,7 @@
 package com.ibd.dcdown.tools
 
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.core.content.edit
 import androidx.datastore.preferences.core.edit
@@ -191,11 +192,14 @@ object AuthUtil {
                     .build()
             ).build()
 
-        val raw = ServiceClient.okHttp.newCall(request).await()
-        val response = ServiceClient.json.decodeFromString<LoginResponse>(raw.body!!.string())
+
+        val raw = withContext(Dispatchers.IO) {
+            ServiceClient.okHttp.newCall(request).await().body!!.string()
+        }
+        val response = ServiceClient.json.decodeFromString<LoginResponse>(raw)
 
         if (response.result != true)
-            throw Exception("로그인 실패: ${response.cause}")
+            throw DCException("로그인 실패: ${response.cause}")
 
         return user.copy(session = Session.of(response))
     }
