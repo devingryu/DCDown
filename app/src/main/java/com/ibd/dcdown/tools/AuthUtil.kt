@@ -114,8 +114,9 @@ object AuthUtil {
             Timber.e(de)
             throw de
         } catch (e: Exception) {
-            Timber.e(e)
-            throw Exception("로그인에 실패했습니다.")
+            e.printStackTrace()
+            Toast.makeText(context, "로그인 실패", Toast.LENGTH_SHORT).show()
+            return null
         }
         loginUser.value = loggedIn
 
@@ -301,8 +302,10 @@ object AuthUtil {
                     )
                 ).toRequestBody(C.JSON)
             ).build()
-        val response = ServiceClient.okHttp.newCall(request).await()
-        return ServiceClient.json.decodeFromString(response.body!!.string())
+        val response = withContext(Dispatchers.IO) {
+            ServiceClient.okHttp.newCall(request).await().body!!.string()
+        }
+        return ServiceClient.json.decodeFromString(response)
     }
 
     @OptIn(DelicateCoroutinesApi::class)
@@ -337,8 +340,10 @@ object AuthUtil {
                     .build()
             )
             .build()
-        val register3Response = ServiceClient.okHttp.newCall(register3Request).await()
-        val clientToken = register3Response.body!!.string().split('=')[1]
+        val register3Response = withContext(Dispatchers.IO) {
+            ServiceClient.okHttp.newCall(register3Request).await().body!!.string()
+        }
+        val clientToken = register3Response.split('=')[1]
 
         GlobalScope.launch {
             launch {
